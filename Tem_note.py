@@ -14,10 +14,10 @@ import time
 
 
 # <<<資料輸入區>>>
-start_day = str(dt.datetime(2021, 11, 3))   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<請輸入資料起始時間>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-Tmax = r'K:\我的雲端硬碟\work\3.TARI\Temperature\soy_Tmax_35upFcst_1-15d_20211103.csv'    #<<<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>>
-Tmin = r'K:\我的雲端硬碟\work\3.TARI\Temperature\soy_Tmin_17lowFcst_1-15d_20211103.csv'   #<<<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>>
-
+start_day = str(dt.datetime(2021, 11, 3))                                                #<<<<<<<<<<<<<<<<請輸入資料起始時間>>>>>>>>>>>>>>
+Tmax = r'K:\我的雲端硬碟\work\3.TARI\Temperature\soy_Tmax_35upFcst_1-15d_20211103.csv'    #<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>
+Tmin = r'K:\我的雲端硬碟\work\3.TARI\Temperature\soy_Tmin_17lowFcst_1-15d_20211103.csv'   #<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>
+file_name = '20211103'                                                                   #<<<<<<<<<<<<<<<<請輸入圖片名稱>>>>>>>>>>>>>>>>>>
 
 
 
@@ -97,3 +97,5 @@ plt.ylabel('')
 plt.title('<低於17度警告>')
 note = ' \n 0：發生機率低\n 1：當日或前後1日有機會發生 \n 2：當日發生可能性大'
 plt.xlabel(note,loc='left')
+file_name = 'K:\\我的雲端硬碟\\work\\3.TARI\\Temperature\\'+file_name+'.png'
+plt.savefig(file_name, bbox_inches='tight',transparent=False)
