@@ -1,0 +1,373 @@
+---
+title: "prepareGLYCIM"
+author: "Chuchung Chen"
+date: "October 29, 2021"
+output: html_document
+---
+2021/11/4 增加path
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+print("Happy")
+```
+
+```{r create}
+#library(magrittr)
+library(readxl)
+
+fname <- {}
+sname <- {}
+
+create <-readxl::read_excel("R Interface/int_TN10_s.xlsx","int") # <<use excel 這個要改名稱
+Var <- read.table("R Interface/Variety.csv",sep=",",header=TRUE)
+
+#read initial cc weather
+#since it takes lots of time to read weather file, the script read it separately 
+#before go into loop
+CCname = "GLYCIM_RCP45_canESM2_2030" # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<這個要改名稱
+all_weather <- read.csv(paste0("weather/",CCname,".csv"))
+counter = 1
+
+
+# I think I can ask the model to run all the year with loop
+for(id in c(1:5)){  # just change here
+
+  # check the weather file
+  CCname_check <- as.character(create$CC_filename[id]) 
+  if(CCname != CCname_check){
+    CCname <- CCname_check
+    all_weather <- read.csv(paste0("weather/",CCname,".csv"))     # read new weather file
+  }
+  # select weather by Grid_ID
+  raw_weather <- all_weather[all_weather$id==create$Grid_ID[id],]
+  # path - 資料夾路徑
+  path <- paste0(create$Variety[id],"-",create$Treat_name[id],"/")
+  
+  # the same as the original glycim interface
+  y <- as.character(create$Year[id])
+  name.folder <- paste0(path,create$name_of_folder[id],"_",y) # time time period
+  # read the name
+ 
+  name.wea <- paste0("grd",create$Grid_ID[id],"_",y)
+  name.stdwea <- as.character(create$STD_weather_ID[id])
+  name.soil <- as.character(create$Soil_ID[id])
+  name.int <- as.character(create$name_of_folder[id])
+  name.var <- as.character(create$Variety[id])
+  name.water <- as.character(create$name_of_folder[id])
+  
+
+  # create folder
+  # use function to create txt 
+  dir.create(name.folder) 
+  create1 <- create[id,] 
+  write.int(create1)
+  write.water(create1)
+  write.var(Var)
+  write.run(create1)
+  # write weather
+
+  weather <- wea2GLYCIM(raw_weather) # select by year
+  write.wea(paste0(name.folder,"/",name.wea),weather)
+  # preparing batch copy file, using vector to record
+  fname[counter] <- name.folder
+  sname[counter] <- name.soil
+  counter = counter + 1 
+
+  #sink() # end the sink, to avoid sink stack is full
+  gc()
+
+  
+}
+  write.bat(fname,sname)
+
+
+```
+
+
+
+
+  
+  
+
+```{r bat}
+write.bat <- function(id,soil){
+
+  sink("copy.bat")
+  for(i in 1:(length(id))){
+    
+     cat("copy"," " )
+     cat('"')
+     cat("R Interface\\Glycim_090821.exe")
+     cat('"')
+     cat("  ")
+     cat('"')
+     cat(id[i])
+     cat('"',"\n")
+  
+
+     cat("copy"," " )
+     cat('"')
+     cat("R Interface\\Soil\\")
+     cat(paste0(soil[i],".soi"))
+     cat('"')
+     cat("  ")
+     cat('"')
+     cat(id[i])
+     cat('"',"\n")
+     
+     cat("copy"," " )
+     cat("Weather\\")
+     cat(paste0(name.stdwea,".wea"))
+     cat("  ")
+     cat('"')
+     cat(id[i])
+     cat('"',"\n")
+  
+  }
+  cat("PAUSE")
+  sink()
+ # write run batch  
+ # sink("runGLYCIM.bat")
+  #  cat(paste0('for /R ','"', 'K:\\TCCIP\\Glycim\\Run\\' ,'"',' %%g in (.) do (', '\n'))
+  #  cat("pushd %%g","\n")
+  #  cat("echo now in %%g","\n")
+  #  cat("Glycim_090821.exe ","\n")    
+  #  cat("popd","\n")
+  #  cat(")")
+  #  cat("pause")
+  #sink()
+}
+gc()
+```
+
+
+
+## make run
+```{r run, echo=FALSE}
+write.run <- function(df){
+  sink(paste0(name.folder,"/","Run.dat"))
+  cat(paste0(name.wea,".WEA"),"\n")
+  cat(paste0(name.stdwea,".WEA"),"\n")
+  cat(paste0(name.soil,".SOI"),"\n")
+  cat(paste0(name.int,".INt"),"\n")
+  cat(paste0(name.var,".VAR"),"\n")
+  cat(paste0(name.water,".DAT"),"\n")
+  cat(paste0(df$name_of_folder,".g01"),"\n")
+  cat(paste0(df$name_of_folder,".out"),"\n")
+  cat(paste0(df$name_of_folder,".sum"),"\n")
+  cat(paste0(df$name_of_folder,".tab"),"\n")
+  
+  sink()
+  
+}
+
+#write.run(create)
+
+```
+
+
+
+## make int
+```{r int, echo=FALSE}
+# directly use the create dataframe
+
+write.int <- function(df){
+  df <- create1
+  
+  date0 <- as.Date(paste(df$Year,01,01,sep="/"),"%Y/%m/%d",tz=Sys.timezone())
+  date1 <- as.Date(df$Sowing,"%m/%d/%Y",tz=Sys.timezone())
+  date2 <- as.Date(df$Harvest,"%m/%d/%Y",tz=Sys.timezone())
+  
+  sink(paste0(name.folder,"/",name.int,".INT"))
+    # line 1
+    cat(df$Latitude,date1-date0+1+3,date2-date0+1," ")
+    cat(round(as.numeric(df$RowSpace)*0.3937,2), round(30.48/as.numeric(df$PlantSpace),2), " ")
+    cat(df$RowAngle,df$ReportFreq,df$Hour,df$CO2,"\n")
+
+    # line 2    
+    cat(round(as.numeric(df$NO3_N)*2*0.8922,2), round(as.numeric(df$NH4_N)*2*0.8922,2)," ")
+    cat(round(as.numeric(df$Napplied)*0.8922,1)," ")
+    cat(df$NO3inN,df$NH4inN, round(as.numeric(df$OrganicMatter)*2*0.8922,2),"\n")
+    # line 3 
+    cat(df$CellNumberVertical,df$CellNumberRow,df$CellDepth,df$depth_of_cultivated," ")
+    cat(df$depth_gas_impermeable,df$T_of_soil_lower_boundary,"0","\n")
+    cat(6,2, "\n")
+    cat("    ", 0.0021, 0.0018,"\n")  #1
+    cat("    ", 0.0015, 0.0012,"\n")  
+    cat("    ", 0.0009, 0.0003,"\n")  #3
+    cat("    ", 0.0011, 0.0009,"\n")
+    cat("    ", 0.0006, 0.0003,"\n")  #5
+    cat("    ", 0.0006, 0.0003,"\n")
+    #cat("    ", 0.012, 0.011, 0.005,"\n")  #7
+    #cat("    ", 0.012, 0.011, 0.005,"\n")
+    #cat("    ", 0.012, 0.011, 0.005,"\n")  #9
+    #cat("    ", 0.012, 0.011, 0.005,"\n")
+  sink()
+}
+
+
+write.water <- function(df){
+  sink(paste0(name.folder,"/",name.water,".dat"))
+
+    cat("Furrow","\n")
+    cat(df$Times_of_Irrigation,"\n")
+    # avoid error from no irrigation
+    if(df$Times_of_Irrigation>=1){
+      for(w in 1:df$Times_of_Irrigation){
+        item <- paste0("Irrigation",w)
+        Date <- subset(df,select=item)[[1]]
+      
+        item <- paste0("Amount",w)
+        depth <- subset(df,select=item)[[1]] * 0.394
+        depth <- round(depth,3)
+      
+        cat(format(Date,format="%m/%d/%y"),"\t",round(depth,3),"\n")
+
+      }
+    }
+   
+
+   sink()
+}
+
+
+```
+
+## make var
+```{r var,echo=FALSE}
+Var <- read.table("R Interface/Variety.csv",sep=",",header=TRUE)
+
+specify_decimal <- function(x, k) trimws(format(round(x, k), nsmall=k))
+
+write.var <- function(df){
+  vname <- name.var
+  var <-  subset(df, select=c("Abbr",vname))
+   var<- var[,2]
+  
+  sink(paste0(name.folder,"/",vname,".VAR"))
+    
+    cat(" ",var[2]," ",var[3]," ",var[4]," ",var[5],"\n")
+    cat("  "," ",round(var[6],6),  1, "\n")
+    cat( "  "," ",round(var[7],6), 2, "\n")
+    cat("  "," ",specify_decimal(var[8],6),  3, "\n")
+    cat("  "," ",specify_decimal(var[9],6),  4, "\n")
+    cat("  "," ",specify_decimal(var[10],6),  5, "\n")
+    cat("  "," ",specify_decimal(var[11],6),  6, "\n")
+    cat("  "," ",specify_decimal(var[12],6),  7, "\n")
+    cat("  "," ",specify_decimal(var[13],6),  8, "\n")
+    cat("  "," ",specify_decimal(var[14],6),  9, "\n")
+    cat("  ","",specify_decimal(var[15],6),  10, "\n")
+    cat("  "," ",specify_decimal(var[16],6),  11, "\n")
+    cat("  ",specify_decimal(var[17],6),  12, "\n")
+    cat("  ",specify_decimal(var[18],6),  13, "\n")
+    cat("  "," ",specify_decimal(var[19],6),  14, "\n")
+    cat("  "," ",specify_decimal(var[20],6),  15, "\n")
+    cat("  "," ",specify_decimal(var[21],6),  16, "\n")
+    cat("  "," ",specify_decimal(var[22],6),  17, "\n")
+    cat("  "," ",specify_decimal(var[23],6),  18, "\n")
+    cat("  "," ",specify_decimal(var[24],6),  19, "\n")
+    cat("  "," ",specify_decimal(var[25],6),  20, "\n")
+    cat("  "," ",specify_decimal(var[26],6),  21, "\n")
+    cat("  "," ",specify_decimal(var[27],6),  22, "\n")
+    cat("  "," ",specify_decimal(var[28],6),  23, "\n")
+    cat("  "," ",specify_decimal(var[29],6),  24, "\n")
+    cat("  "," ",specify_decimal(var[30],6),  25, "\n")
+  
+  sink()
+}
+
+
+
+
+```
+
+
+## make wea
+
+
+### to GLYCIM
+THE following chrunk making the weather file for GLYCIM model, two functions were made here. 
+The *wea2GLYCIM* function directly extrat the values according to column names, therefore, it is  
+important to check the columnname here. The *write.wea* function make wea file for GLYCIM model.<br>
+*The format of wea for GLYCIM were as follows*
+
+|JDAY         |DATE                      | TMAX     | TMIN     |  RAIN    |  WIND          |
+|-------------|--------------------------|----------|----------|----------|----------------|
+|day of year  |characters denoting date  |max air T |min air T |rainfall  |wind run at 2 m |
+|Julian date  |'mm/dd'                   |o F       |o F       |inch/day  |miles/day       |
+
+Numbers and characters are written in free format <br/>
+1 MJ/m2 = 23.900574 langley <br/>
+1  mm = 0.03937 inch  <br/>
+1 m/s = 53.69 miles/day <br/>
+T(f) = T(c) * 1.8 +32 <br/>
+
+```{r func wea, echo=FALSE}
+
+# change weather format to GLYCIM
+wea2GLYCIM <- function(df){
+    
+  date0 <- as.Date(paste(y,01,01,sep="/"),"%Y/%m/%d")
+  date <- as.Date(paste(y,df$Month,df$Day,sep="/"),"%Y/%m/%d")
+  Jday <- NA
+  for(d in 1:nrow(df)){ Jday[d] <- date[d] - date0 + 1   }
+
+  MONTH <- df$Month
+  DAY <- df$Day
+  SolRad <- df$SolRad * 23.9
+  Tmax <- df$Tmax * 1.8 + 32
+  Tmin <- df$Tmin * 1.8 + 32 
+  RAIN <- df$Precp * 0.03937
+  WIND <- df$Windspeed * 53.69 
+  
+  GLYCIM.df <- data.frame(Jday, MONTH, DAY, SolRad, Tmax, Tmin, RAIN , WIND)
+  
+  return(GLYCIM.df)
+}
+
+# write wea file for GLYCIM
+write.wea <- function(fname,df){
+  sink(paste0(fname,".wea"))
+  
+  cat("'",fname,"'","\n")
+  for(i in 1:nrow(df)){
+    cat(df[i,1]," ")
+    cat("'")
+    m.glycim <- if(df[i,2]>9){df[i,2]}else{paste0("0",df[i,2])}
+    cat(m.glycim)
+    cat("/")
+    d.glycim <- if(df[i,3]>9){df[i,3]}else{paste0("0",df[i,3])}
+    cat(d.glycim)
+    cat("'")
+    cat(" ")
+    cat(round(df[i,4],digits=2),"\t", round(df[i,5],digits=2),"\t")
+    cat(round(df[i,6],digits=2),"\t",round(df[i,7],digits=2),"\t",round(df[i,8],digits=2))
+    cat("\n")
+  }
+ sink() 
+}
+```
+
+### read/write wea
+This chunk reads the weather file and write into the wea for GYLCIM.
+```{r GLYCIM wea,warning=FALSE }
+library(magrittr)
+
+y = 2018 # this is important here, the wea2GLYCIM share the global variant "y"
+
+
+
+ read.table(paste0("Weather/",name.wea,".csv"),sep=",",header=TRUE)  %>% wea2GLYCIM  %>% 
+  write.wea(paste0(name.folder,"/",name.wea),.)
+
+ df <- read.table(paste0("Weather/KDARES_10",".csv"),sep=",",header=TRUE)  
+ df1 <- wea2GLYCIM(df)
+ 
+
+  write.wea(paste0("weather/","KDARES_GLYCIM.wea"),df1)
+
+
+# rm(MONTH, Month, month.vcsvname,Tmax,Tmin,date,date0)
+
+```
