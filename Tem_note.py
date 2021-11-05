@@ -88,11 +88,13 @@ plt.rcParams['font.sans-serif'] = 'Microsoft JhengHei'
 plt.rcParams["axes.unicode_minus"] = False
 plt.figure(dpi=200)
 plt.subplot(211)
-sns.heatmap(df1,vmax=2, vmin=0,cmap='OrRd',linewidths=2,xticklabels = False,annot=True)
+# 更改cbar的顯示值
+cbar_kws = {"ticks":[0,1,2]}
+sns.heatmap(df1,vmax=2, vmin=0,cmap='OrRd', cbar_kws=cbar_kws, linewidths=1,xticklabels = False,annot=True)
 plt.ylabel('')
 plt.title('<高於35度警告>')
 plt.subplot(212)
-sns.heatmap(df2,vmax=2, vmin=0,cmap='Blues',linewidths=2,annot=True)
+sns.heatmap(df2,vmax=2, vmin=0,cmap='Blues',cbar_kws=cbar_kws,linewidths=1,annot=True)
 plt.ylabel('')
 plt.title('<低於17度警告>')
 note = ' \n 0：發生機率低\n 1：當日或前後1日有機會發生 \n 2：當日發生可能性大'
