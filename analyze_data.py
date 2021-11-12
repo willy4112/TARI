@@ -15,12 +15,11 @@ import os
 
 path = os.getcwd()
 
-# KH9_s , KH9_f , TN10_s , TN10_f       # <<<<<<<<<<<<<<<<<<<<<<選擇要整理的檔名
-filename = 'TN10_s'      # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<輸入要整理的檔名
+# 'KH9_s' , 'KH9_f' , 'TN10_s' , 'TN10_f'       # <<<<<<<<<<<<<<<<<<<<<<選擇要整理的檔名
+filename = 'TN10_f'      # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<輸入要整理的檔名
 filepath = path + '\\' +filename
 
-
-# 取得位於那些資料夾
+# In[1]     取得位於那些資料夾
 # files = ['bcc-csm1-1','MIROC-ESM','NorESM1-M']
 # files = ['bcc-csm1-1','camESM2']
 files = ['bcc-csm1-1','camESM2','CCSM4','MIROC-ESM','MRI-CGCM3','NorESM1-M']
@@ -39,8 +38,7 @@ df = df.drop(['index'],axis=1)
 
 
 
-
-# <<<取25%,50%,75% 分布數值>>>
+# In[2]     <<<取25%,50%,75% 分布數值>>>
 
 # 擷取所要的資料
 df1 = df[['model','gridID','lon','lat','ID_2030','Yield_ha_2030','Yield_ha_2040','Yield_ha_2050']]
@@ -58,84 +56,114 @@ report_dif_model = df2.iloc[:,[1,9,16,17,20,21,22,24,25,28,29,30,32,33,36,37,38]
 # report_dif_model.to_csv(filepath+'_dif_model'+'.csv')
 
 
+# In[3]     <<<以city群組分析各年度產量變化>>>
 
-# <<<比較各年度產量變化>>>
+# 讀取city資料
+city = pd.read_csv('N:\data\city.csv',encoding='big5')
+# 將city資料與數據merge
+city_data = pd.merge(df1,city)
 
+file_name = filepath
+
+p1 = sns.boxplot(x="Yield_ha_2030", y="city", data=city_data)
+p1.set_xlim(-1000, 10000)
+plt.savefig(file_name+"_Yield_2030.png", bbox_inches='tight',transparent=True,dpi=200)
+plt.show()
+plt.close()
+p2 = sns.boxplot(x="Yield_ha_2040", y="city", data=city_data)
+p2 = p2.set_xlim(-1000, 10000)
+plt.savefig(file_name+"_Yield_2040.png", bbox_inches='tight',transparent=True,dpi=200)
+plt.show()
+plt.close()
+p3 = sns.boxplot(x="Yield_ha_2050", y="city", data=city_data)
+p3 = p3.set_xlim(-1000, 10000)
+plt.savefig(file_name+"_Yield_2050.png", bbox_inches='tight',transparent=True,dpi=200)
+plt.show()
+plt.close()
+# 取出所需的資料
+# report_city_yield = city_data.iloc[:,[0,17,19,20,21,22,23,25,27,28,29,30,31,33,35,36,37,38,39]]
+
+# In[4]      <<<比較各年度產量變化>>>
+'''
 # style = 1, 2030>2040>2050
 # style = 2, 2030>2050>2040
 # style = 3, 2040>2030>2050
 # style = 4, 2040>2050>2030
 # style = 5, 2050>2040>2030
 # style = 6, 2050>2030>2040
+'''
+# style = []
+# for j in range(0,5580):
+#     value_model = df1.iloc[j,0]
+#     value_lon = df1.iloc[j,2]
+#     value_lat = df1.iloc[j,3]
+#     xy = [value_lon,value_lat]
+#     value_id = df1.iloc[j,8]
+#     value_50 = int(df1.iloc[j,7])
+#     value_40 = int(df1.iloc[j,6])
+#     value_30 = int(df1.iloc[j,5])
 
-style = []
-for j in range(0,5580):
-    value_model = df1.iloc[j,0]
-    value_lon = df1.iloc[j,2]
-    value_lat = df1.iloc[j,3]
-    xy = [value_lon,value_lat]
-    value_id = df1.iloc[j,8]
-    value_50 = int(df1.iloc[j,7])
-    value_40 = int(df1.iloc[j,6])
-    value_30 = int(df1.iloc[j,5])
+#     if value_50 > value_30 and value_50 > value_40:
+#         if value_40 > value_30:
+#             s = 6
+#         else:
+#             s = 5
+#     elif value_40 > value_30 and value_40 > value_50:
+#         if value_50 > value_30:
+#             s = 4
+#         else:
+#             s = 3
+#     else:
+#         if value_50 > value_40:
+#             s = 2
+#         else:
+#             s = 1
+#     style.append([value_model,value_lon,value_lat,xy,value_id,value_30,value_40,value_50,s])
 
-    if value_50 > value_30 and value_50 > value_40:
-        if value_40 > value_30:
-            s = 6
-        else:
-            s = 5
-    elif value_40 > value_30 and value_40 > value_50:
-        if value_50 > value_30:
-            s = 4
-        else:
-            s = 3
-    else:
-        if value_50 > value_40:
-            s = 2
-        else:
-            s = 1
-    style.append([value_model,value_lon,value_lat,xy,value_id,value_30,value_40,value_50,s])
-
-titel = ['model','lon','lat','xy','id','yield_2030','yield_2040','yield_2050','style']
-data = np.array(style)
-report_style = pd.DataFrame(data,columns=titel)
-# 儲存檔案
+# titel = ['model','lon','lat','xy','id','yield_2030','yield_2040','yield_2050','style']
+# data = np.array(style)
+# report_style = pd.DataFrame(data,columns=titel)
+# # 儲存檔案
 # report_style.to_csv(filepath+'_style'+'.csv')
 
 
 
-# <<<繪製heatmap在不同氣候模式下>>>
-# # 取得lot與lat的資料長度
-lot_long = set(list(report_style.iloc[:, 1]))
-lot_long = sorted(lot_long, reverse = False)
-lat_long = set(list(report_style.iloc[:, 2]))
-lat_long = sorted(lat_long, reverse = True)
-table = np.zeros((68,40))
-repor_table = pd.DataFrame(table)
-repor_table = pd.DataFrame(table,index=lat_long,columns=lot_long)
-# 將list填入表格
-# bcc-csm1-1 , canESM2 , CCSM4 , MIROC-ESM , MRI-CGCM3 , NorESM1-M
-m = 'NorESM1-M'
-df3 = report_style[(report_style['model']==m)]
-df3.reset_index(inplace=True)
-df3 = df3.drop(['index'],axis=1)
-for k in range(0,930):
-    [x,y] = df3.loc[k,"xy"]
-    repor_table.loc[y,x] = df3.loc[k,"style"]
-repor_table = pd.DataFrame(repor_table,columns=lot_long)
-# 設定中文字型
-plt.rcParams['font.sans-serif'] = 'Microsoft JhengHei'
-# 設定負號正確顯示
-plt.rcParams["axes.unicode_minus"] = False
-plt.figure(dpi=800)
-sns.heatmap(repor_table,vmax=6, vmin=1,cmap='Set1',square=True,mask=(repor_table < 0.5))
-plt.title(filename+"  "+m)
-note = ' \n 1：2030>2040>2050     2：2030>2050>2040\n 3：2040>2030>2050     4：2040>2050>2030\n 5：2050>2040>2030     6：2050>2030>2040\n'
-plt.xlabel(note,loc='left')
-file_name = path + '\\'+filename+'_'+m+'.png'
-plt.savefig(file_name, bbox_inches='tight',transparent=False)
+# In[5]     <<<繪製heatmap在不同氣候模式下>>>
 
-# <<<繪製不同氣候模型下的產量變化>>>
+# # 取得lot與lat的資料長度
+# lot_long = set(list(report_style.iloc[:, 1]))
+# lot_long = sorted(lot_long, reverse = False)
+# lat_long = set(list(report_style.iloc[:, 2]))
+# lat_long = sorted(lat_long, reverse = True)
+# table = np.zeros((68,40))
+# repor_table = pd.DataFrame(table)
+# repor_table = pd.DataFrame(table,index=lat_long,columns=lot_long)
+# # 將list填入表格
+# # 'bcc-csm1-1' , 'camESM2' , 'CCSM4' , 'MIROC-ESM' , 'MRI-CGCM3' , 'NorESM1-M'
+# m = 'NorESM1-M'
+# df3 = report_style[(report_style['model']==m)]
+# df3.reset_index(inplace=True)
+# df3 = df3.drop(['index'],axis=1)
+# for k in range(0,930):
+#     [x,y] = df3.loc[k,"xy"]
+#     repor_table.loc[y,x] = df3.loc[k,"style"]
+# repor_table = pd.DataFrame(repor_table,columns=lot_long)
+# # 設定中文字型
+# plt.rcParams['font.sans-serif'] = 'Microsoft JhengHei'
+# # 設定負號正確顯示
+# plt.rcParams["axes.unicode_minus"] = False
+# plt.figure(dpi=800)
+# sns.heatmap(repor_table,vmax=6, vmin=1,cmap='Set1',square=True,mask=(repor_table < 0.5))
+# plt.title(filename+"  "+m)
+# note = ' \n 1：2030>2040>2050     2：2030>2050>2040\n 3：2040>2030>2050     4：2040>2050>2030\n 5：2050>2040>2030     6：2050>2030>2040\n'
+# plt.xlabel(note,loc='left')
+# file_name = path + '\\'+filename+'_'+m+'.png'
+# plt.savefig(file_name, bbox_inches='tight',transparent=True)
+
+
+
+# In[6]     <<<繪製不同氣候模型下的產量變化>>>
+
 # drow_table = report_style.iloc[:,[0,8]]
 # L1 = report_style[(report_style['model']=='bcc-csm1-1')].groupby('style')['model'].count()
 # L2 = report_style[(report_style['model']=='canESM2')].groupby('style')['model'].count()
