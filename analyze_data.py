@@ -11,13 +11,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 # import datetime as dt
 # import time
-import os
+# import os
 from matplotlib.colors import ListedColormap
 
 path = r'C:\Users\acer\Desktop\climate change'
 
 # 'KH9_s' , 'KH9_f' , 'TN10_s' , 'TN10_f'       # <<<<<<<<<<<<<<<<<<<<<<選擇要整理的檔名
-filename = 'TN10_s'      # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<輸入要整理的檔名
+filename = 'TN10_f'      # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<輸入要整理的檔名
 filepath = path + '\\' +filename
 
 # In[1]     取得位於那些資料夾
@@ -163,7 +163,7 @@ repor_table = pd.DataFrame(table)
 repor_table = pd.DataFrame(table,index=lat_long,columns=lot_long)
 # 將list填入表格
 # 'bcc-csm1-1' , 'camESM2' , 'CCSM4' , 'MIROC-ESM' , 'MRI-CGCM3' , 'NorESM1-M'
-m = 'NorESM1-M'
+m = 'bcc-csm1-1'
 df3 = report_style[(report_style['model']==m)]
 df3.reset_index(inplace=True)
 df3 = df3.drop(['index'],axis=1)
@@ -181,23 +181,58 @@ plt.title(filename+"  "+m)
 note = ' \n 1：2030>2040>2050     2：2030>2050>2040\n 3：2040>2030>2050     4：2040>2050>2030\n 5：2050>2040>2030     6：2050>2030>2040\n'
 plt.xlabel(note,loc='left')
 file_name = path + '\\'+filename+'_'+m+'.png'
-plt.savefig(file_name, bbox_inches='tight',transparent=True)
+# plt.savefig(file_name, bbox_inches='tight',transparent=True)
 
 
 
 # In[7]     <<<繪製不同氣候模型下的產量變化>>>
 
-# drow_table = report_style.iloc[:,[0,8]]
-# L1 = report_style[(report_style['model']=='bcc-csm1-1')].groupby('style')['model'].count()
-# L2 = report_style[(report_style['model']=='canESM2')].groupby('style')['model'].count()
-# L3 = report_style[(report_style['model']=='CCSM4')].groupby('style')['model'].count()
-# L4 = report_style[(report_style['model']=='MIROC-ESM')].groupby('style')['model'].count()
-# L5 = report_style[(report_style['model']=='MRI-CGCM3')].groupby('style')['model'].count()
-# L6 = report_style[(report_style['model']=='NorESM1-M')].groupby('style')['model'].count()
-# drow_style = pd.concat([L1,L2,L3,L4,L5,L6], axis=1)
-# drow_style.columns=files
-# drow_style = drow_style.fillna(0)
-# plt.figure(dpi=10000)
-# drow_style.plot(kind='bar')
-# note = ' \n 1：2030>2040>2050     2：2030>2050>2040\n 3：2040>2030>2050     4：2040>2050>2030\n 5：2050>2040>2030     6：2050>2030>2040\n'
-# plt.xlabel(note,loc='left')
+drow_table = report_style.iloc[:,[0,8]]
+L1 = report_style[(report_style['model']=='bcc-csm1-1')].groupby('style')['model'].count()
+L2 = report_style[(report_style['model']=='canESM2')].groupby('style')['model'].count()
+L3 = report_style[(report_style['model']=='CCSM4')].groupby('style')['model'].count()
+L4 = report_style[(report_style['model']=='MIROC-ESM')].groupby('style')['model'].count()
+L5 = report_style[(report_style['model']=='MRI-CGCM3')].groupby('style')['model'].count()
+L6 = report_style[(report_style['model']=='NorESM1-M')].groupby('style')['model'].count()
+drow_style = pd.concat([L1,L2,L3,L4,L5,L6], axis=1)
+drow_style.columns=files
+drow_style = drow_style.fillna(0)
+plt.figure(dpi=10000)
+drow_style.plot(kind='bar')
+note = ' \n 1：2030>2040>2050     2：2030>2050>2040\n 3：2040>2030>2050     4：2040>2050>2030\n 5：2050>2040>2030     6：2050>2030>2040\n'
+plt.xlabel(note,loc='left')
+
+
+# In[8]     <<<繪製不同氣候模型下的產量Heatmap>>>
+
+df5 = report_style
+
+lot_long = set(list(report_style.iloc[:, 1]))
+lot_long = sorted(lot_long, reverse = False)
+lat_long = set(list(report_style.iloc[:, 2]))
+lat_long = sorted(lat_long, reverse = True)
+table = np.zeros((68,40))
+repor_table_1 = pd.DataFrame(table)
+repor_table_1 = pd.DataFrame(table,index=lat_long,columns=lot_long)
+
+
+for m in files:
+    df5 = report_style[(report_style['model']==m)]
+    df5.reset_index(inplace=True)
+    df5 = df5.drop(['index'],axis=1)
+    Year = ['yield_2030','yield_2040','yield_2050']
+    for year in Year:
+        for k in range(0,930):
+            [x,y] = df5.loc[k,"xy"]
+            repor_table_1.loc[y,x] = df5.loc[k,year]
+        repor_table_1 = pd.DataFrame(repor_table_1,columns=lot_long)
+        # 設定中文字型
+        plt.rcParams['font.sans-serif'] = 'Microsoft JhengHei'
+        # 設定負號正確顯示
+        plt.rcParams["axes.unicode_minus"] = False
+        plt.figure(dpi=800)
+        sns.heatmap(repor_table_1,vmax=6000,vmin=1000,cmap='BrBG',xticklabels=4,square=True,mask=(repor_table_1 < 0.5))
+        # sns.heatmap(repor_table_1,vmax=18000,vmin=6000,cmap='BrBG',xticklabels=4,square=True,mask=(repor_table_1 < 0.5))
+        plt.title(filename+"  "+m+"  "+year)
+        file_name = path + '\\'+filename+'_'+m+'_'+year+'.png'
+        plt.savefig(file_name, bbox_inches='tight',transparent=True)
