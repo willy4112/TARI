@@ -5,14 +5,17 @@ library(ggplot2)
 
 
 
+# file='bcc-csm1-1'
+file='bcc-csm1-1_changeH2Otime'
+point='1032'
+year = '2030'
+# t = paste('????', year,sep = "_")
+t = paste('????', year,'c',sep = "_")
 
-path <- "L:\\climate change model\\to_run\\bcc-csm1-1\\TN10-spring\\spring_657_chishan_2030"
+path <- paste("L:\\climate change model\\to_run\\",file,"\\TN10-spring\\spring_",point,"_chishan_",year,sep = "")
 
-simname <- "spring_657_chishan"
+simname <- paste("spring_",point,"_chishan",sep = "")
 
-year = 2030
-
-t = '六腳_2030_change_H2O_time'
 
 
 # function
@@ -104,7 +107,6 @@ merge <- merge[1:(nrow(merge)-1),]
 
 
 #merge$wStress = NA
-
 for(i in c(1:(nrow(merge)))){
   
   # growth stage
@@ -118,7 +120,10 @@ for(i in c(1:(nrow(merge)))){
     merge$Stage[i] = paste0("R",floor(merge$RSTAGE[i]))
     
   }
-  
+  # 撠??????epth??0
+  if(is.na(merge$depth[i])){
+    merge$depth[i] = 0
+  } 
 }
 
 merge$wStress = merge$Date
@@ -129,7 +134,7 @@ for(i in c(1:(nrow(merge)))){
     
     merge$wStress[i] = NA
     
-  }else if(merge$W[i] <4){
+  }else if(merge$W[i] <6){
     
     merge$wStress[i] = NA
     
@@ -148,11 +153,25 @@ for(i in c(1:(nrow(merge)))){
 merge$Stage <- factor(merge$Stage,levels=c("V","R1","R2","R3","R4","R5","R6","R7"))
 
 
-ggplot(merge)+geom_line(aes(x=Date,y=CLIMAT4*2.54)) + labs(x="Date",y="Precipitation (mm/day)",title=t)+theme_bw()+
+#??瘞游?????
+
+# ggplot(merge)+geom_line(aes(x=Date,y=CLIMAT4*2.54),size=1) + labs(x="Date",y="Precipitation (mm/day)",title=t)+theme_bw()+
+#   
+#   theme(plot.title=element_text(hjust = 0.5,face="bold",size=15))+
+#   
+#   geom_text(aes(x=wDate,label="???",y=1.6),color="blue",size = 15)+  
+#   
+#   geom_area(aes(x=Date,y=-0.4,fill=Stage),size=0,linetype=0,alpha=0.7)+
+#   
+#   geom_col(aes(x=wStress,y=20),alpha=0.3
+
+# leaf area
+ggplot(merge)+geom_line(aes(x=Date, y=LAREAT))+labs(x='Date',y="Leaf area (cm/plant)",title=t)+theme_bw()+
+  
   theme(plot.title=element_text(hjust = 0.5,face="bold",size=15))+
   
-  geom_text(aes(x=wDate,label="↓",y=0.2),color="blue",size = 10)+
+  geom_text(aes(x=wDate,label="???",y=330),color="blue",size = 15)+  
   
-  geom_area(aes(x=Date,y=-0.1,fill=Stage),size=0,linetype=0,alpha=0.7)+
+  geom_area(aes(x=Date,y=-50,fill=Stage),size=0,linetype=0,alpha=0.7)+
   
-  geom_col(aes(x=wDate,y=3),alpha=0.3)+ylim(-0.2,3)
+  geom_col(aes(x=wStress,y=4000),alpha=0.3)+ylim(-50,4000)
