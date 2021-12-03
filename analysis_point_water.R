@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 library(stringr)
 
 library(ggplot2)
@@ -9,8 +10,8 @@ library(ggplot2)
 file='bcc-csm1-1_changeH2Otime'
 point='1032'
 year = '2030'
-# t = paste('????', year,sep = "_")
-t = paste('????', year,'c',sep = "_")
+# t = paste('新園', year,sep = "_")
+t = paste('新園', year,'c',sep = "_")
 
 path <- paste("L:\\climate change model\\to_run\\",file,"\\TN10-spring\\spring_",point,"_chishan_",year,sep = "")
 
@@ -120,7 +121,7 @@ for(i in c(1:(nrow(merge)))){
     merge$Stage[i] = paste0("R",floor(merge$RSTAGE[i]))
     
   }
-  # 撠??????epth??0
+  # 將無灌溉時期的depth改為0
   if(is.na(merge$depth[i])){
     merge$depth[i] = 0
   } 
@@ -153,13 +154,13 @@ for(i in c(1:(nrow(merge)))){
 merge$Stage <- factor(merge$Stage,levels=c("V","R1","R2","R3","R4","R5","R6","R7"))
 
 
-#??瘞游?????
+#畫出水分收支圖
 
 # ggplot(merge)+geom_line(aes(x=Date,y=CLIMAT4*2.54),size=1) + labs(x="Date",y="Precipitation (mm/day)",title=t)+theme_bw()+
 #   
 #   theme(plot.title=element_text(hjust = 0.5,face="bold",size=15))+
 #   
-#   geom_text(aes(x=wDate,label="???",y=1.6),color="blue",size = 15)+  
+#   geom_text(aes(x=wDate,label="↓",y=1.6),color="blue",size = 15)+  
 #   
 #   geom_area(aes(x=Date,y=-0.4,fill=Stage),size=0,linetype=0,alpha=0.7)+
 #   
@@ -170,7 +171,7 @@ ggplot(merge)+geom_line(aes(x=Date, y=LAREAT))+labs(x='Date',y="Leaf area (cm/pl
   
   theme(plot.title=element_text(hjust = 0.5,face="bold",size=15))+
   
-  geom_text(aes(x=wDate,label="???",y=330),color="blue",size = 15)+  
+  geom_text(aes(x=wDate,label="↓",y=330),color="blue",size = 15)+  
   
   geom_area(aes(x=Date,y=-50,fill=Stage),size=0,linetype=0,alpha=0.7)+
   
