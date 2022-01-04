@@ -1,3 +1,4 @@
+#%% 跑歷史值用升溫模式
 # assign class
 mainStemNode = Tomgro.Node()
 Assimilate = Tomgro.Source(410,mainStemNode)
@@ -97,7 +98,6 @@ with open (outputName, 'w',newline='') as csvwrite:
                 dailyGRnet = 0
                 dNdday = 0
 
-# 開始計算歷史部分
 # initialize variable
 dailyPg_his = 0
 dailyRm_his = 0
@@ -107,16 +107,16 @@ TempSum = 0
 TempDay = 0
 
 # initilize list for ploting
-lst_datetime_his = []
-lst_node_his = []
-lst_lai_his = []
-lst_DWtotal_his = []
-lst_DWfruit_his = []
-lst_DWmature_his = []
-lst_Pg_his = []
-lst_Rm_his = []
+lst_datetime_his_up = []
+lst_node_his_up = []
+lst_lai_his_up = []
+lst_DWtotal_his_up = []
+lst_DWfruit_his_up = []
+lst_DWmature_his_up = []
+lst_Pg_his_up = []
+lst_Rm_his_up = []
 
-dayStart_his = datetime.strptime(row[0] ,"%Y/%m/%d")
+
 
 with open (outputName, 'w',newline='') as csvwrite:
     writer = csv.writer(csvwrite, delimiter=',')
@@ -135,7 +135,7 @@ with open (outputName, 'w',newline='') as csvwrite:
                 continue
             # if hour == 10:
             #     print(dateTime)
-            temperature = float(row[2])
+            temperature = float(row[2])+Range_temperature
             if row[4] == "NA":
                 ppfd = 0
             else:
@@ -174,14 +174,14 @@ with open (outputName, 'w',newline='') as csvwrite:
                 writer.writerow(toWrite)
                 
                 # prepare list for ploting
-                lst_datetime_his.append(dateTime)
-                lst_node_his.append(mainStemNode.node)
-                lst_lai_his.append(mainStemNode.LAI)
-                lst_DWtotal_his.append(Sink1.W)
-                lst_DWfruit_his.append(Sink1.Wf)
-                lst_DWmature_his.append(Sink1.Wm)
-                lst_Pg_his.append(dailyPg_his)
-                lst_Rm_his.append(dailyRm_his)
+                lst_datetime_his_up.append(dateTime)
+                lst_node_his_up.append(mainStemNode.node)
+                lst_lai_his_up.append(mainStemNode.LAI)
+                lst_DWtotal_his_up.append(Sink1.W)
+                lst_DWfruit_his_up.append(Sink1.Wf)
+                lst_DWmature_his_up.append(Sink1.Wm)
+                lst_Pg_his_up.append(dailyPg_his)
+                lst_Rm_his_up.append(dailyRm_his)
                 
                 # reinitialized variable into 0
                 TempSum = 0
