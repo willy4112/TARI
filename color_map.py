@@ -4,24 +4,28 @@ Created on Sat Jan 22 16:16:20 2022
 
 @author: Chai-Wei Waang
 """
+#%% color_map 1
+
+import numpy as np
+import pylab as pl
+from matplotlib.colors import hsv_to_rgb
+
+V, H = np.mgrid[0:1:100j, 0:1:360j]
+S = np.ones_like(V)*1   # 設定0-1之間
+HSV = np.dstack((H,S,V))
+RGB = hsv_to_rgb(HSV)
+pl.imshow(RGB, origin="lower", extent=[0, 360, 0, 1], aspect=150)
+pl.xlabel("H")
+pl.ylabel("V")
+pl.title("$S_{HSV}=0.1$")
+pl.show()
+
+#%% color_map 2
 
 import pandas as pd
 import numpy as np
-# import pylab as pl
 import matplotlib.pyplot as plt
-# from matplotlib.colors import hsv_to_rgb
 import colorsys
-# import seaborn as sns
-
-# V, H = np.mgrid[0:1:100j, 0:1:360j]
-# S = np.ones_like(V)*1   # 設定0-1之間
-# HSV = np.dstack((H,S,V))
-# RGB = hsv_to_rgb(HSV)
-# pl.imshow(RGB, origin="lower", extent=[0, 360, 0, 1], aspect=150)
-# pl.xlabel("H")
-# pl.ylabel("V")
-# pl.title("$S_{HSV}=0.1$")
-# pl.show()
 
 
 X = []
@@ -30,7 +34,6 @@ C = []
 
 number = 60
 s =  0.75         # 0.75-0.5
-
 
 table = np.ones((10,number))
 table = pd.DataFrame(table)
@@ -49,12 +52,14 @@ for i in range(10):
         Y.append(i)
         C.append(rgb)
 
+# 畫成漸層表格
 # plt.figure(figsize=[10,3])
 # plt.scatter(X, Y, s=200, color = C, marker="s")
 # plt.title("$V_{HSV}=$"+str(v))
 # plt.show()
 
 
+# 畫成同心圓
 L = [1]*number
 
 # C0 = list(table.iloc[0,:])
