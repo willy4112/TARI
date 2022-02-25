@@ -1,0 +1,192 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 24 16:21:34 2022
+
+@author: Chia-Wei Wang
+"""
+
+import tkinter as tk
+import math
+
+
+def calculate_circular():
+    radius = float(radius_entry.get())
+    area = round(math.pi*radius*radius, 2)
+    result = '圓面積為：{} '.format(area)
+    result_label.configure(text=result)
+
+
+
+# 建立主視窗 Frame
+window = tk.Tk()
+
+# 視窗標題
+window.title('GUI demo')
+# 設定視窗大小(出現位置)
+window.geometry('+800+200')
+# 設定背景顏色
+window.configure(background='#e5b7b7')
+
+# 第0層，標題
+header_label = tk.Label(window, text='GUI demo',bg="#e5d8b7",font=("", 32))
+# 設定出現位置
+header_label.grid(row=0, column=0)
+
+# 第1層，標題
+header1_label = tk.Label(window, text='-'*12+'圓面積計算'+'-'*12,bg="#cee5b7",font=("", 16))
+header1_label.grid(row=1, column=0)
+
+# 第2層，輸入區
+# 設定框架，因為預計要在此區放入2個項目
+layer2_frame = tk.Frame(window)
+layer2_frame.grid(row=2, column=0)
+
+enter_label = tk.Label(layer2_frame, text='請輸入半徑(cm):',bg="#b7e5c4",font=("", 16))
+enter_label.grid(row=0, column=0)
+# 輸入框
+radius_entry = tk.Entry(layer2_frame, width=6,font=("", 16))
+radius_entry.grid(row=0, column=1, ipadx=10,padx=10,pady=10)
+
+# 第3層，計算按鈕與結果
+layer3_frame = tk.Frame(window)
+layer3_frame.grid(row=3, column=0)
+# 按鈕
+calculate_btn = tk.Button(layer3_frame, text='圓面積計算', command=calculate_circular, width=15,font=("", 16))
+calculate_btn.grid(row=0, column=0)
+
+result_label = tk.Label(layer3_frame,bg="#b7e5e5",font=("", 16))
+result_label.grid(row=0, column=1, ipadx=10,padx=10)
+
+unit_label = tk.Label(layer3_frame, text='(cm2)',bg="#b7c4e5",font=("", 16))
+unit_label.grid(row=0, column=2)
+
+# 第4層，標題
+header2_label = tk.Label(window, text='-'*12+'各式功能展示'+'-'*12,bg="#ceb7e5",font=("", 16))
+header2_label.grid(row=4, column=0)
+
+# 第5層，各式功能1
+layer5_frame = tk.Frame(window,bg="#000000")
+layer5_frame.grid(row=5, column=0, ipady=5)
+# 拉桿
+scale_1 = tk.Scale(layer5_frame, to = 10, orient="horizontal")
+scale_1.grid(row=0, column=0,columnspan=2)
+
+scale_2 = tk.Scale(layer5_frame,from_=-5, to = 5)
+scale_2.grid(row=0, column=2,rowspan=2, ipadx=5,padx=5)
+
+# 標記
+spinbox_label = tk.Label(layer5_frame, text='X=:')
+spinbox_label.grid(row=1, column=0)
+
+# 微調按鈕
+spinbox = tk.Spinbox(layer5_frame, from_=-5, to=5,width=4)
+spinbox.grid(row=1, column=1, ipadx=5,padx=5)
+
+
+# 第6層
+layer6_frame = tk.Frame(window)
+layer6_frame.grid(row=6, column=0)
+
+label_0 = tk.Label(layer6_frame, text='grid與pack對照表').grid(row=0, column=0,columnspan=3)
+label_1 = tk.Label(layer6_frame, text='nw').grid(row=1, column=0)
+label_2 = tk.Label(layer6_frame, text='n').grid(row=1, column=1)
+label_3 = tk.Label(layer6_frame, text='ne').grid(row=1, column=2)
+label_4 = tk.Label(layer6_frame, text='w').grid(row=2, column=0)
+label_5 = tk.Label(layer6_frame, text='center').grid(row=2, column=1)
+label_6 = tk.Label(layer6_frame, text='e').grid(row=2, column=2)
+label_7 = tk.Label(layer6_frame, text='sw').grid(row=3, column=0)
+label_8 = tk.Label(layer6_frame, text='s').grid(row=3, column=1)
+label_9 = tk.Label(layer6_frame, text='se').grid(row=3, column=2)
+
+# 第7層，各式功能1
+layer7_frame = tk.Frame(window)
+layer7_frame.grid(row=7, column=0)
+
+group_1 = tk.LabelFrame(layer7_frame, text="單選",bg="#e5b7b7")
+group_1.grid(row=0, column=0, padx=10, pady=10)
+
+# 儲存一個整型變數
+'''
+x = StringVar() # 儲存一個 string 型別變數, 預設值為""
+x = IntVar() # 儲存一個整型變數, 預設值為0
+x = DoubleVar() # 儲存一個浮點型變數, 預設值為0.0
+x = BooleanVar() # 儲存一個布林型變數, 返回值為 0 (代表 False) 或 1 (代表 True)
+'''
+V1 = tk.IntVar()
+# 單選按鈕
+radiobutton_1 = tk.Radiobutton(group_1, text="yes", variable=V1, value=1).pack(anchor="w")
+radiobutton_2 = tk.Radiobutton(group_1, text="no", variable=V1, value=2).pack(anchor="w")
+
+group_2 = tk.LabelFrame(layer7_frame, text="多選", padx=5, pady=5,bg="#cee5b7")
+group_2.grid(row=0, column=1, padx=5, pady=5)
+# 多選按鈕
+checkbutton_0 = tk.Checkbutton(group_2, text="demo").grid(row=0, column=0)
+checkbutton_1 = tk.Checkbutton(group_2, text="C++").grid(row=1, column=0)
+checkbutton_2 = tk.Checkbutton(group_2, text="Python").grid(row=2, column=0)
+checkbutton_3 = tk.Checkbutton(group_2, text="R").grid(row=3, column=0)
+checkbutton_4 = tk.Checkbutton(group_2, text="n1").grid(row=0, column=1)
+checkbutton_5 = tk.Checkbutton(group_2, text="n2").grid(row=1, column=1)
+checkbutton_6 = tk.Checkbutton(group_2, text="n3").grid(row=2, column=1)
+checkbutton_7 = tk.Checkbutton(group_2, text="n4").grid(row=3, column=1)
+
+group_3 = tk.LabelFrame(layer7_frame, text="多選_1", padx=5, pady=5,bg="#b7c4e5")
+group_3.grid(row=0, column=2, padx=5, pady=5)
+
+# 儲存一個布林型變數,讓確認紐存入，才不會影響到其他地確認紐
+V2_1 = tk.BooleanVar()
+V2_2 = tk.BooleanVar()
+V2_3 = tk.BooleanVar()
+V2_4 = tk.BooleanVar()
+# 多選按鈕
+checkbutton_0 = tk.Checkbutton(group_3, text="n1",variable=V2_1).grid(row=0, column=0)
+checkbutton_1 = tk.Checkbutton(group_3, text="n2",variable=V2_2).grid(row=1, column=0)
+checkbutton_2 = tk.Checkbutton(group_3, text="n3",variable=V2_3).grid(row=2, column=0)
+checkbutton_3 = tk.Checkbutton(group_3, text="n4",variable=V2_4).grid(row=3, column=0)
+
+group_4 = tk.LabelFrame(layer7_frame, text="清單選單", padx=5, pady=5,bg="#e5b7d8")
+group_4.grid(row=0, column=3, padx=5, pady=5)
+
+
+optionList = ["Python", "Java", "Swift"]
+V3 = tk.StringVar()
+V3.set("demo")
+# 記得將list前加上*，這list樣才會分開
+optionmenu = tk.OptionMenu(group_4, V3, *optionList)
+optionmenu.grid(row=0, column=0, sticky=tk.N+tk.W)
+
+
+listbox = tk.Listbox(group_4)
+listbox["height"] = 5
+listbox.insert(1, "Python")
+listbox.insert(2, "Java")
+listbox.insert(3, "Swift")
+listbox.insert(4, "JavaScript")
+listbox.insert(5, "C")
+listbox.grid(row=1, column=0, sticky=tk.N+tk.W)
+
+# 第8層，各式功能1
+layer8_frame = tk.Frame(window)
+layer8_frame.grid(row=8, column=0)
+# 建立標題框
+group_1 = tk.LabelFrame(layer8_frame, text="卷軸")
+group_1.grid(row=0, column=0, padx=10, pady=10)
+# 卷軸
+sb = tk.Scrollbar(group_1)
+sb.pack(side="right", fill="y")
+# 列表箱
+lb = tk.Listbox(group_1, yscrollcommand=sb.set)
+
+for i in range(100):
+    lb.insert("end", str(i))
+
+lb.pack(side="left", fill="both")
+# 同步卷軸與列表箱的顯示
+sb.config(command=lb.yview)
+
+group_1 = tk.LabelFrame(layer8_frame, text="留言框")
+group_1.grid(row=0, column=1, padx=10, pady=10)
+
+text = tk.Text(group_1, height=10, width=50).grid(row=0, column=1, padx=5, pady=5)
+
+
+window.mainloop()
