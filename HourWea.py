@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jan 19 17:09:33 2022
-
-@author: ccchen
-"""
 import math
 import csv
 import matplotlib.pyplot as plt
@@ -85,7 +79,6 @@ class ReadWea:
         Tmax = tmax_lst[posit]
         Tmin_tom = tmin_lst[posit+1]
         Tmax_tom = tmax_lst[posit+1]
-        
         tempList = [[Tmin_yest,Tmax_yest], [Tmin,Tmax], [Tmin_tom,Tmax_tom]]
         
         return tempList # end of the function
@@ -94,7 +87,9 @@ class ReadWea:
 #--------- (inciden radiation submodel) ----------
 
 class Radiation:    
-    SDERP = [0.3964, 3.631, 0.03838, 0.07659, 0.0, -22.97,-0.3885, -0.1587, -0.01021]
+    SDERP = {1:0.3964, 2:3.631, 3:0.03838, 4:0.07659, 5: 0.0,
+             6:-22.97, 7:-0.3885, 8:-0.1587, 9:-0.01021}
+    
     def __init__(self,lat):
         self.DAYLNG = 0  # day length
         self.DEC = 0.3964 # solar declination
@@ -109,10 +104,11 @@ class Radiation:
 
     def solarDeclination(self,JDAY):
         # Roberson and Ruselo (1968)
-        self.DEC = self.SDERP[0]
-        for i in range(1,5):
+        self.DEC = self.SDERP[1]
+        for i in range(2,6):
+            N = i - 1
             j = i + 4
-            D11 = i*0.01721*JDAY            
+            D11 = N*0.01721*JDAY            
             self.DEC += self.SDERP[i]*math.sin(D11) + self.SDERP[j]*math.cos(D11)
         self.DEC = self.DEC * DEGRAD
                         
@@ -159,6 +155,7 @@ class TemperatureHr:
         self.Tmin = 20
         self.Tmax_tom = 24
         self.Tmin_tom = 20
+        self.TDUSKY = 0
         self.WATACT = 200 # W/m2
         self.TempH = {1:10, 2:10, 3:10, 4:10, 5:10, 6:10, 7:10, 8:10, 9:10, 10:10,
                       11:10, 12:10, 13:10, 14:10, 15:10, 16:10, 17:10, 18:10, 19:10,
@@ -173,31 +170,39 @@ class TemperatureHr:
         self.Tmax = tempList[1][1]
         self.Tmin_tom = tempList[2][0]
         self.Tmax_tom = tempList[1][1]
+        # solRad read from TCCIP is W/m2 per hour
+        solRad = solRad*24/(dayLength)
         self.WATACT = solRad
         self.convertHourly(daylength) # end of the method
         
     def convertHourly(self,daylength):
+        
         DAYLNG = daylength
         DAWN = 12 - (DAYLNG/2)
         DUSK = 12 + DAYLNG/2
-        TDUSKY = (self.Tmax_yest + self.Tmin_yest)/2
+        if self.TDUSKY == 0:
+            self.TDUSKY = (self.Tmax + self.Tmin)/2
+
         # calculate time after doawn in hours when maximum temp is reached
-        D20 = 0.0945 - (self.WATACT* 8.06E-5 ) + (self.Tmax * 6.77E-4)
+        D20 = 0.0945 - (self.WATACT* 8.06E-05 * 2.0/math.pi)  + (self.Tmax * 6.77E-04)
         D21 = self.Tmax/D20/self.WATACT
+        #print("D21=%f" %D21)
         D21 = min(D21,1)
         TMAXHR = DAYLNG/math.pi * (math.pi - math.asin(D21))
+
         # calculate air temp at dusk TDUSK
         D22 = (self.Tmax - self.Tmin) / 2
         D23 = math.pi/TMAXHR
         D24 = 1.5*math.pi
         TDUSK = (D22 * (1.0 + math.sin((D23*DAYLNG + D24)))) + self.Tmin
+        
         # some parts of temperature equation
-        XTEMP = 5.0
-        if self.Tmin < TDUSKY:
-            D25 = TDUSKY - self.Tmin + XTEMP
+        XTEMP = 2.0
+        if self.Tmin < self.TDUSKY:
+            D25 = self.TDUSKY - self.Tmin + XTEMP
             D26 = math.log(D25/XTEMP) / (2 * DAWN)
         else:
-            D27 = (self.Tmin - TDUSKY)/ (2 * DAWN)
+            D27 = (self.Tmin - self.TDUSKY)/ (2 * DAWN)
             
         if self.Tmin_tom < TDUSK:
             D28 = TDUSK - self.Tmin_tom + XTEMP
@@ -206,16 +211,16 @@ class TemperatureHr:
             D30 = (self.Tmin_tom - TDUSK) / (2 * DAWN)
         # calculate air temperature at each time
         for h in range(1,25):
-            TIMH = h - 0.5
+            TIMH = h - 0.0
             if TIMH >= DAWN and TIMH <= DUSK: # 白天
                 T01 = self.Tmin + D22 * (1 + math.sin(D23*(TIMH-DAWN)+D24))
                 self.TempH[h] = T01
             elif TIMH < DAWN: # 清晨
-                if self.Tmin < TDUSKY:
-                    T01 = self.Tmin - XTEMP + (D25/math.exp(D26*(DAWN + TIMH)))
+                if self.Tmin < self.TDUSKY:
+                    T01 = self.Tmin - XTEMP + D25/math.exp(D26*(DAWN + TIMH))
                     self.TempH[h] = T01
                 else:
-                    T01 = TDUSKY + D27*(DAWN+TIMH)
+                    T01 = self.TDUSKY + D27*(DAWN+TIMH)
                     self.TempH[h] = T01
             elif TIMH > DUSK: # 晚上
                 if self.Tmin_tom < TDUSK:
@@ -224,6 +229,77 @@ class TemperatureHr:
                 else:
                     T01 = TDUSK + D30*(TIMH - DUSK)
                     self.TempH[h] = T01
+        self.TDUSKY = TDUSK
+        # end of the method
+
+    
+class TemperatureHr3:
+    # Cesaraccio et al. (2001) An improved model for determining degree-day
+    # values from daily temperature data. Int. J. Biometerol. 45:161-169.
+    def __init__(self):
+        self.Tmax_yest = 24
+        self.Tmin_yest = 20
+        self.Tmax = 24
+        self.Tmin = 20
+        self.Tmax_tom = 24
+        self.Tmin_tom = 20
+        self.TDUSKY = 0
+        self.WATACT = 200 # W/m2
+        self.TempH = {1:10, 2:10, 3:10, 4:10, 5:10, 6:10, 7:10, 8:10, 9:10, 10:10,
+                      11:10, 12:10, 13:10, 14:10, 15:10, 16:10, 17:10, 18:10, 19:10,
+                      20:10, 21:10, 22:10, 23:10, 24:10} # list content hourly value
+    
+    def Hourly(self,day_leng,tempList):
+
+        daylength = day_leng
+        self.Tmin_yest = tempList[0][0]
+        self.Tmax_yest = tempList[0][1]
+        self.Tmin = tempList[1][0]
+        self.Tmax = tempList[1][1]
+        self.Tmin_tom = tempList[2][0]
+        self.Tmax_tom = tempList[1][1]
+        #self.WATACT = solRad
+        self.convertHourly(daylength) # end of the method
+        
+    def convertHourly(self,daylength):
+                
+        DAYLNG = daylength
+        Hn = 12 - (DAYLNG/2) # sunrise hour
+        Ho = 12 + DAYLNG/2 # sunset hour
+        Hx = Ho - 4 # time of maximum temperature
+        Hp = Hn + 24 # sunrise hour tomorrow
+        
+        # calculate air temperature at dust (To)
+        # the 0.39 value was the empirical factor in the original paper
+        To = self.Tmax - 0.39*(self.Tmax - self.Tmin_tom) # sunset temperature
+        ToY = self.Tmax_yest - 0.39*(self.Tmax_yest - self.Tmin) # sunset temperature yesterday
+
+        # calculate variable for three segment temperature
+        D01 = self.Tmax - self.Tmin # alpha for 1st segment [eq 8]
+        D02 = self.Tmax - To          # R for 2nd segment  [eq 9]
+        D03 = (self.Tmin_tom - To)/math.sqrt(Hp - Ho) # b for 3rd segment [eq. 10]
+        
+
+        
+        for h in range(1,25):
+            if h <= Hn: # 清晨之前 用前一天的溫度算
+                D00 = (self.Tmin - ToY)/math.sqrt(Hp - Ho)
+                T01 = ToY + D00 * math.sqrt(h+24-Ho)
+                self.TempH[h] = T01
+            # elif h > Hn and h <= Hx: # 清晨到最高溫
+            elif h <= Hx: # 清晨到最高溫
+                S01 = (h - Hn)/(Hx - Hn)
+                T01 = self.Tmin + D01 * math.sin(S01 *math.pi/2)
+                self.TempH[h] = T01
+            # elif h > Hx and h <= Ho:# 最高溫到日落
+            elif h <= Ho:# 最高溫到日落
+                S01 = (h - Hx)/4
+                T01 = To + D02 * math.sin(math.pi/2 + S01*math.pi/2)
+                self.TempH[h] = T01
+            # elif h > Ho and h < Hp: # 日落到明天日昇
+            else: # 日落到明天日昇
+                T01 = To + D03 * math.sqrt(h-Ho)
+                self.TempH[h] = T01
         # end of the method
 
     
@@ -263,73 +339,3 @@ if __name__ == "__main__" :
     # print(test)
     
     #------- have temperature and radiation as input
-    
-    data_Hour = r'C:\Users\acer\Desktop\HourWea\G2F820_item_hour_2000to2021.csv'
-    data_daly = r'C:\Users\acer\Desktop\HourWea\G2F820_item_day_2000to2021.csv'
-    
-    df_hour = pd.read_csv(data_Hour)
-    df_daly = pd.read_csv(data_daly)
-    
-    mm = [1,3,5,7,9,11]
-    dd = [random.randint(1, 30) for _ in range(6)]
-    plt.figure(figsize=[10,8],dpi=150)
-    for i in range(6):
-        month = mm[i]
-        day = dd[i]
-        
-        start_day = str(dt.datetime(2012, month, day))        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<輸入日期
-        
-        struct_time = time.strptime(start_day, '%Y-%m-%d %H:%M:%S')
-        time_stamp = int(time.mktime(struct_time))
-        sec = time_stamp
-        sec_1 = time_stamp - 1*86400
-        sec_2 = time_stamp + 1*86400
-        struct_time = time.localtime(sec)
-        start_day = time.strftime('%Y/%m/%d', struct_time)
-        struct_time_1 = time.localtime(sec_1)
-        start_day_1 = time.strftime('%Y/%m/%d', struct_time_1)
-        struct_time_2 = time.localtime(sec_2)
-        start_day_2 = time.strftime('%Y/%m/%d', struct_time_2)
-        
-        df_1_1 =df_daly[df_daly.Date == start_day_1]
-        df_1_2 =df_daly[df_daly.Date == start_day]
-        df_1_3 =df_daly[df_daly.Date == start_day_2]
-        df_1_4 =df_hour[df_hour.Date == start_day]
-        
-        JDAY = 3 
-        latitude = 24.01
-        # input
-        solRad = df_1_2.iloc[0,6] #(MJ/m2)      #<<<輸入日射量
-        templst = [[df_1_1.iloc[0,3],df_1_1.iloc[0,2]], [df_1_2.iloc[0,3],df_1_2.iloc[0,2]], [df_1_3.iloc[0,3],df_1_3.iloc[0,2]]]
-        WAT = 24 * 1000000/(60*60*24) # W/m2
-        
-        # calculating day length by the "Radiation class"
-        Rad = Radiation(latitude) # activate class with latitude
-        Rad.theory(JDAY) # calculate theory value i.e. daylength, potential solRad(W/m2)
-        dayLength = Rad.DAYLNG
-        # calculate hourly temperature
-        HourCalculator = TemperatureHr() # create HourTemp object
-        HourCalculator.Hourly(dayLength,templst,WAT)
-        test = HourCalculator.TempH
-        
-        tempH_obs = list(df_1_4['Temp'])
-        
-        
-        # --------- make plot
-        Hour = []
-        tempH_lst = []
-        for h in range(1,25):
-            Hour.append(h)
-            tempH_lst.append(test[h])    
-        
-        tempH_gap = list(np.array(tempH_lst) - np.array(tempH_obs))
-        RMSE = round(sum(np.array(tempH_gap)**2) / len(tempH_gap),2)
-
-        plt.subplot(3,2,i+1)
-        plt.plot(Hour,tempH_obs,label='observed',color ="#C0C0C0")
-        plt.plot(Hour,tempH_lst,label='simulated')
-        plt.legend()
-        plt.title(start_day)
-        plt.xlabel('RMSE = '+str(RMSE),loc='left',size=16)
-        plt.tight_layout()
-    plt.show()
