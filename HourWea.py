@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jan 19 17:09:33 2022
+
+@author: ccchen
+"""
 import math
 import csv
 import matplotlib.pyplot as plt
@@ -339,3 +345,99 @@ if __name__ == "__main__" :
     # print(test)
     
     #------- have temperature and radiation as input
+    
+    
+    data_Hour = r'C:\Users\acer\Desktop\HourWea\G2F820_item_hour_2000to2021.csv'
+    data_daly = r'C:\Users\acer\Desktop\HourWea\G2F820_item_day_2000to2021.csv'
+    
+    df_hour = pd.read_csv(data_Hour)
+    df_daly = pd.read_csv(data_daly)
+    
+    
+    
+    mm = [2,4,6,8,10,12]
+    dd = [random.randint(1, 30) for _ in range(6)]
+    # dd = [3,8,13,18,23,28]
+    plt.figure(figsize=[10,10],dpi=150)
+    for i in range(6):
+        month = mm[i]
+        day = dd[i]
+        
+        start_day = str(dt.datetime(2010, month, day))        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<輸入日期
+        
+        struct_time = time.strptime(start_day, '%Y-%m-%d %H:%M:%S')
+        time_stamp = int(time.mktime(struct_time))
+        sec = time_stamp
+        sec_1 = time_stamp - 1*86400
+        sec_2 = time_stamp + 1*86400
+        struct_time = time.localtime(sec)
+        start_day = time.strftime('%Y/%m/%d', struct_time)
+        struct_time_1 = time.localtime(sec_1)
+        start_day_1 = time.strftime('%Y/%m/%d', struct_time_1)
+        struct_time_2 = time.localtime(sec_2)
+        start_day_2 = time.strftime('%Y/%m/%d', struct_time_2)
+        
+        df_1_1 =df_daly[df_daly.Date == start_day_1]
+        df_1_2 =df_daly[df_daly.Date == start_day]
+        df_1_3 =df_daly[df_daly.Date == start_day_2]
+        df_1_4 =df_hour[df_hour.Date == start_day]
+        
+        JDAY = int(time_stamp/86400%365)
+        latitude = 24.01
+        # input
+        solRad = df_1_2.iloc[0,6] #(MJ/m2)      #<<<輸入日射量
+        templst = [[df_1_1.iloc[0,3],df_1_1.iloc[0,2]], [df_1_2.iloc[0,3],df_1_2.iloc[0,2]], [df_1_3.iloc[0,3],df_1_3.iloc[0,2]]]
+        WAT = 24 * 1000000/(60*60*24) # W/m2
+        
+        # calculating day length by the "Radiation class"
+        Rad = Radiation(latitude) # activate class with latitude
+        Rad.theory(JDAY) # calculate theory value i.e. daylength, potential solRad(W/m2)
+        dayLength = Rad.DAYLNG
+        
+        Tem = TemperatureHr()
+        Tem.convertHourly(dayLength)
+        D20 = 0.0945 - (Tem.WATACT* 8.06E-05 * 2.0/math.pi)  + (Tem.Tmax * 6.77E-04)
+        D21 = Tem.Tmax/D20/Tem.WATACT
+        D21 = min(D21,1)
+        TMAXHR = round(dayLength/math.pi * (math.pi - math.asin(D21)),2)
+        
+        Hn = round(12 - (dayLength/2),1)
+        Ho = round(12 + (dayLength/2),1)
+        Hx = round(Ho - 4,1)
+        Hp = round(Hn +24,1)
+        # calculate hourly temperature
+        HourCalculator = TemperatureHr() # create HourTemp object
+        HourCalculator.Hourly(dayLength,templst,WAT)
+        test = HourCalculator.TempH
+        
+        tempH_obs = list(df_1_4['Temp'])
+        
+        # --------- make plot
+        Hour = []
+        tempH_lst = []
+        for h in range(1,25):
+            Hour.append(h)
+            tempH_lst.append(test[h])    
+        
+        # Hr_Tmax = tempH_lst.index(max(tempH_lst))
+        # Hr_sunset = Hr_Tmax+4
+        
+        # Hr_Tmin = tempH_lst.index(min(tempH_lst))
+        # Hr_sunrise = Hr_Tmin+24
+        # for k in range(Hr_sunset,24):
+        #     tempH_lst[k] = max(tempH_lst) - (0.39*(max(tempH_lst)-min(tempH_lst))*k/12)**0.5*10
+        
+        tempH_gap = list(np.array(tempH_lst) - np.array(tempH_obs))
+        RMSE = round(sum(np.array(tempH_gap)**2) / len(tempH_gap),2)
+
+        plt.subplot(3,2,i+1)
+        plt.plot(Hour,tempH_obs,label='observed',color ="#C0C0C0")
+        plt.plot(Hour,tempH_lst,label='simulated')
+        plt.legend()
+        plt.title(start_day,size=20)
+        plt.ylim(5,40)
+        # plt.xlabel(' RMSE = '+str(RMSE)+'       DayLength='+str(round(dayLength,2))+'\n rain='+str(df_1_2.iloc[0,5])+'              SolRad='+str(df_1_2.iloc[0,6])+'\n '+str([df_1_1.iloc[0,3],df_1_1.iloc[0,2]])+'  '+str([df_1_2.iloc[0,3],df_1_2.iloc[0,2]])+'  '+str([df_1_3.iloc[0,3],df_1_3.iloc[0,2]])+'\n Tmax_hr='+str(tempH_lst.index(max(tempH_lst))+1)+'\n [Hn,Hx,Ho,Hp] = '+str([Hn,Hx,Ho,Hp])+'\n',loc='left',size=16)
+        # plt.xlabel(' RMSE = '+str(RMSE)+'       DayLength='+str(round(dayLength,2))+'\n rain='+str(df_1_2.iloc[0,5])+'              SolRad='+str(df_1_2.iloc[0,6])+'\n Tmax_hr='+str(tempH_lst.index(max(tempH_lst))+1)+'       TMAXHR='+str(TMAXHR)+'\n [Hn,Hx,Ho,Hp] = '+str([Hn,Hx,Ho,Hp])+'\n '+str([df_1_1.iloc[0,3],df_1_1.iloc[0,2]])+'  '+str([df_1_2.iloc[0,3],df_1_2.iloc[0,2]])+'  '+str([df_1_3.iloc[0,3],df_1_3.iloc[0,2]])+'\n',loc='left',size=16)
+        plt.xlabel(' RMSE = '+str(RMSE)+'\n DayLength='+str(round(dayLength,2))+'\n SolRad='+str(df_1_2.iloc[0,6]),loc='left',size=16)
+        plt.tight_layout()
+    plt.show()
