@@ -21,26 +21,27 @@ import pandas as pd
 # files5：歷史平均資料
 # =============================================================================
 
-files1 = r'C:\Users\willy\Desktop\test\高雄旗山C0V740.csv'
-files2 = r'C:\Users\willy\Desktop\test\高雄旗山C0V740-2022-04.csv'
-files3 = r'C:\Users\willy\Desktop\test\高雄旗山-高雄旗南72V140_item_day_20220419085539.csv'
-files4 = r'C:\Users\willy\Desktop\test\未來氣象_高雄旗山.csv'
-files5 = r'C:\Users\willy\Desktop\test\average\365_Chishan_20152019.csv'
+files1 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\高雄旗山C0V740.csv'
+files2 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\高雄旗山C0V740-2022-04.csv'
+files3 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\高雄旗山-高雄旗南72V140_item_day_20220425090300.csv'
+files4 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\未來氣象_高雄旗山.csv'
+files5 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\365_Chishan_20152019.csv'
 
 
 # =============================================================================
 # 匯入先前資料
 # =============================================================================
 df1 = pd.read_csv(files1)
-df1.columns=['Year','Month','Day','Tmax','Tmin','WS','Precp','SolRad']
+# df1.columns=['Year','Month','Day','Tmax','Tmin','WS','SolRad','Precp']
 # df1[['Year','Month','Day']] = df1['Time'].str.split('/',expand=True)
 # df1 = df1.drop(['Time'],axis=1)
 # df1 = df1[['Year','Month','Day','Tmax','Tmin','WS','Precp','SolRad']].astype('float64')
-# df1 = pd.read_csv(files1,skiprows=0,header=1,encoding='big5')
+
+# df1 = pd.read_csv(files1,skiprows=0,encoding='big5')
 # df1.columns=['Time','Tmax','Tmin','WS','Precp','SolRad']
 # df1[['Year','Month','Day']] = df1['Time'].str.split('/',expand=True)
 # df1 = df1.drop(['Time'],axis=1)
-# df1 = df1[['Year','Month','Day','Tmax','Tmin','WS','Precp','SolRad']].astype('float64')
+# df1 = df1[['Year','Month','Day','Tmax','Tmin','WS','SolRad','Precp']].astype('float64')
 
 # =============================================================================
 # 整理網路資料，農改場有含日射量的
@@ -55,7 +56,7 @@ for i in range(x):
 df3.columns=['Time','Tmax','Tmin','WS','Precp','SolRad']
 df3[['Year','Month','Day']] = df3['Time'].str.split('-',expand=True)
 df3 = df3.drop(['Time'],axis=1)
-df3 = df3[['Year','Month','Day','Tmax','Tmin','WS','Precp','SolRad']].astype('float64')
+df3 = df3[['Year','Month','Day','Tmax','Tmin','WS','SolRad','Precp']].astype('float64')
 
 # =============================================================================
 # 整理網路資料，區域資料
@@ -85,12 +86,15 @@ for i in range(1,5):
             print(int(df2.iloc[j,0]),df2.columns[i])
 
 for i in range(len(report_check.axes[0])):
-    [a,b,c] = df1.iloc[-1,0:3] == report_check.iloc[i,0:3]
+    # [a,b,c] = df1.iloc[-1,0:3] == report_check.iloc[i,0:3]
+    [a,b,c] = df1.iloc[-15,0:3] == report_check.iloc[i,0:3]
     if [a,b,c] == [True,True,True]:
         num_cut = i
-
-report_cut = report_check.iloc[num_cut+1:,:]
-report_now = pd.concat([df1,report_cut],axis=0)
+        report_cut = report_check.iloc[num_cut:,:]
+        # report_now = pd.concat([df1,report_cut],axis=0)
+        report_now = pd.concat([df1.iloc[:-15,:],report_cut],axis=0)
+    else:
+        pass
 
 # =============================================================================
 # 整理未來氣象
@@ -117,7 +121,7 @@ df4 = df4[['Month','Day','Tmax','Tmin']].astype('float64')
 # 整理未來7天數據
 # =============================================================================
 df5 = pd.read_csv(files5)
-df5 = df5[['Year','Month','Day','Tmax','Tmin','WS','Precp','SolRad']]
+df5 = df5[['Year','Month','Day','Tmax','Tmin','WS','SolRad','Precp']]
 for i in range(len(df5.axes[0])):
     if df5.iloc[i,1] == df4.iloc[0,0] and df5.iloc[i,2] == df4.iloc[0,1]:
         start = i
@@ -131,14 +135,14 @@ for i in range(len(df4.axes[0])):
     df5_cut.at[i,'Tmin'] = df4.loc[i,'Tmin']
 
 report_future = df5_cut
-report_future['Year'] = report_now.iloc[-1,0]
+report_future['Year'] = df1.iloc[-1,0]
 
 # =============================================================================
 # 合併觀測資料與未來氣象，匯出存檔
 # =============================================================================
 report = pd.concat([report_now,report_future],axis=0)
 # 匯出檔案
-# report.to_csv(files1,header=True,index=False,encoding='utf-8-sig')
+report.to_csv(files1,header=True,index=False,encoding='utf-8-sig')
 
 # # 檢查是否相同,要放最後面才執行
 # from pandas.testing import assert_frame_equal
@@ -150,9 +154,9 @@ report = pd.concat([report_now,report_future],axis=0)
 
 import matplotlib.pyplot as plt
 
-Time_start = '20220314'
-Time_end = '20220518'
-title = "高雄旗山"
+Time_start = '20220211'     # 旗山0124    新園0126      六腳0211
+Time_end = '20220531'
+title = "嘉義六腳"      # 高雄旗山      屏東新園    嘉義六腳
 
 Year_start = int(Time_start[0:4])
 Month_start = int(Time_start[4:6])
@@ -227,11 +231,11 @@ plt.xlabel('\n觀測期間：'+str(Temperature.loc[start,'Time'])+'-'+str(Temper
 plt.tight_layout()
 
 # 畫出累積溫度圖
-plt.figure(figsize=[6,4],dpi=200)
+plt.figure(figsize=[8,5],dpi=200)
 y = np.zeros(Temperature['Time'].size)
-plt.plot(Temperature['Time'],Temperature['add_now'], label='現在觀測',linewidth=0,marker='o')
-plt.plot(Temperature['Time'],Temperature['add_fut'], label='未來預測',linewidth=0,marker='*')
-plt.fill_between(Temperature['Time'], y1 = Temperature['add_his'],y2 = y,color = '#844200',alpha = 0.5, label='歷史累積',)
+plt.plot(Temperature['Time'],Temperature['add_now'], label='現在觀測累積',linewidth=0,marker='o')
+plt.plot(Temperature['Time'],Temperature['add_fut'], label='未來預測累積',linewidth=0,marker='*')
+plt.fill_between(Temperature['Time'], y1 = Temperature['add_his'],y2 = y,color = '#844200',alpha = 0.25, label='歷史累積',)
 xaxis = [Temperature.loc[i,'Time'] for i in range(start,end,7)]
 plt.xticks(xaxis)
 title_name = '累積溫度__'+title
@@ -239,11 +243,16 @@ plt.title(title_name)
 plt.ylabel('累積溫度 (℃)')
 num_add_his = round(Temperature.loc[fut,'add_his'],2)
 num_add_fut = round(Temperature.loc[fut,'add_fut'],2)
-num_add_dif = round(abs(num_add_fut-num_add_his),2)
+num_add_dif = round(num_add_fut-num_add_his,2)
 if num_add_dif > 0:
     icon_temp_add = '多'
 else:
     icon_temp_add = '少'
-plt.xlabel('\n觀測期間：'+str(Temperature.loc[start,'Time'])+'-'+str(Temperature.loc[now,'Time'])+'                觀測期間：'+str(Temperature.loc[now+1,'Time'])+'-'+str(Temperature.loc[fut,'Time'])+'\n歷史累積： '+str(num_add_his)+'℃'+'            預測累積： '+str(num_add_fut)+'℃'+'            累積差異： '+icon_temp_add+str(num_add_fut)+'℃',loc='left')
+num_dif_day = round((num_add_dif/Temperature.loc[fut,'Temp_his']),2)
+if num_add_dif > 0:
+    icon_temp_dif = '早'
+else:
+    icon_temp_dif = '晚'
+plt.xlabel('\n觀測期間：'+str(Temperature.loc[start,'Time'])+'-'+str(Temperature.loc[now,'Time'])+'                觀測期間：'+str(Temperature.loc[now+1,'Time'])+'-'+str(Temperature.loc[fut,'Time'])+'\n歷史累積： '+str(num_add_his)+'℃'+'            預測累積： '+str(num_add_fut)+'℃'+'            累積差異： '+icon_temp_add+str(abs(num_add_dif))+'℃'+'            相當於： '+icon_temp_dif+str(abs(num_dif_day))+'天',loc='left')
 plt.legend(loc = 'upper left')
 plt.tight_layout()
