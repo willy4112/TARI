@@ -4,11 +4,11 @@ Created on Tue Apr 19 10:32:06 2022
 
 @author: Chia-Wei Wang
 """
-
+#%% 將資料整理成GLYCIM格式
 import numpy as np
 import pandas as pd
 
-#%% 將資料整理成GLYCIM格式
+
 
 # GLYCIM 格式 = [Year,Month,Day,Tmax,Tmin,WS,SolRad,Precp]
 # =============================================================================
@@ -21,11 +21,11 @@ import pandas as pd
 # files5：歷史平均資料
 # =============================================================================
 
-files1 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\高雄旗山C0V740.csv'
-files2 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\高雄旗山C0V740-2022-04.csv'
-files3 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\高雄旗山-高雄旗南72V140_item_day_20220425090300.csv'
-files4 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\未來氣象_高雄旗山.csv'
-files5 = r'C:\Users\Thermo-IRMS\Desktop\test\20220425\365_Chishan_20152019.csv'
+files1 = r'F:\GLYCIM\Weather_fromWeb\20220516\高雄旗山C0V740.csv'
+files2 = r'F:\GLYCIM\Weather_fromWeb\20220516\高雄旗山C0V740-2022-05.csv'
+files3 = r'F:\GLYCIM\Weather_fromWeb\20220516\高雄旗南72V140_item_day_20220516091337.csv'
+files4 = r'F:\GLYCIM\Weather_fromWeb\20220516\高雄旗山_未來氣象.csv'
+files5 = r'F:\GLYCIM\Weather_fromWeb\20220516\365_Chishan_20152019.csv'
 
 
 # =============================================================================
@@ -154,9 +154,9 @@ report.to_csv(files1,header=True,index=False,encoding='utf-8-sig')
 
 import matplotlib.pyplot as plt
 
-Time_start = '20220211'     # 旗山0124    新園0126      六腳0211
-Time_end = '20220531'
-title = "嘉義六腳"      # 高雄旗山      屏東新園    嘉義六腳
+Time_start = '20220124'     # 旗山0124    新園0126      六腳0211
+Time_end = '20220531'       # 旗山0428    新園0504      六腳0531
+title = "高雄旗山"      # 高雄旗山      屏東新園    嘉義六腳
 
 Year_start = int(Time_start[0:4])
 Month_start = int(Time_start[4:6])
@@ -222,11 +222,12 @@ plt.xticks(xaxis)
 title_name = '觀測值減歷史平均__'+title
 plt.title(title_name)
 plt.ylabel('溫度差 (℃)')
-num_dif = round(abs(np.sum(Temperature['now-his_cut'])),2)
+num_dif = round(np.sum(Temperature['now-his_cut']),2)
 if num_dif > 0:
     icon_temp = '多'
 else:
     icon_temp = '少'
+num_dif = abs(num_dif)
 plt.xlabel('\n觀測期間：'+str(Temperature.loc[start,'Time'])+'-'+str(Temperature.loc[now,'Time'])+'                累積差異： '+icon_temp+str(num_dif)+'℃',loc='left',size = 12)
 plt.tight_layout()
 
