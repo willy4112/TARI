@@ -69,7 +69,7 @@ df1.iloc[4,0] = '雲林縣水林鄉'
 df1.iloc[5,0] = '台中市大肚區'
 df1.set_index("Stn" , inplace=True)
 # 改columns名稱
-df1.columns=day
+df1.columns=day.date
 
 
 
