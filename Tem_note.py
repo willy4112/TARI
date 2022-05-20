@@ -6,7 +6,7 @@ Created on Wed Nov  3 15:50:23 2021
 """
 
 import pandas as pd
-# import numpy as np
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import datetime as dt
@@ -14,33 +14,40 @@ import time
 
 
 # <<<資料輸入區>>>
-Input_Date = '20220419'
+Input_Date = '20220520'                                                #<<<<<<<<<<<<<<<<請輸入資料起始時間>>>>>>>>>>>>>>
 
 
 Year = int(Input_Date[0:4])
 Montth = int(Input_Date[4:6])
 Day = int(Input_Date[6:])
 
-start_day = str(dt.datetime(Year, Montth, Day))                                                #<<<<<<<<<<<<<<<<請輸入資料起始時間>>>>>>>>>>>>>>
-Tmax = r'D:\我的雲端硬碟\work\3.TARI\Temperature\soy_Tmax_35upFcst_1-15d_'+Input_Date+'.csv'    #<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>
-Tmin = r'D:\我的雲端硬碟\work\3.TARI\Temperature\soy_Tmin_17lowFcst_1-15d_'+Input_Date+'.csv'    #<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>
+
+
+start_day = pd.to_datetime(Input_Date)
+day = pd.date_range(start_day,periods=15,freq='D')
+
+Tmax = r'C:\Users\user_11\Downloads\soy_Tmax_35upFcst_1-15d_'+Input_Date+'.csv'    #<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>
+Tmin = r'C:\Users\user_11\Downloads\soy_Tmin_17lowFcst_1-15d_'+Input_Date+'.csv'    #<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>
 file_name = Input_Date                                                                  #<<<<<<<<<<<<<<<<請輸入圖片名稱>>>>>>>>>>>>>>>>>>
 
 
+# start_day = str(dt.datetime(Year, Montth, Day))
 
-# <<<修改colums日期用>>>
-# 轉成時間元組
-struct_time = time.strptime(start_day, '%Y-%m-%d %H:%M:%S')
-# 轉成時間截
-time_stamp = int(time.mktime(struct_time))
-# 建立空list，將轉換成時間元組，轉換成字串，存入list
-day = []
-for i in range(0,15):
-    sec = i*86400+time_stamp
-    struct_time = time.localtime(sec)
-    date = time.strftime('%Y/%m/%d', struct_time)
-    day.append(date)
-# day.insert(0, 'day')
+# # <<<修改colums日期用>>>
+# # 轉成時間元組
+# struct_time = time.strptime(start_day, '%Y-%m-%d %H:%M:%S')
+
+
+# # 轉成時間截
+# time_stamp = int(time.mktime(struct_time))
+# # 建立空list，將轉換成時間元組，轉換成字串，存入list
+# day = []
+# for i in range(0,15):
+#     sec = i*86400+time_stamp
+#     struct_time = time.localtime(sec)
+#     date = time.strftime('%Y/%m/%d', struct_time)
+#     day.append(date)
+# # day.insert(0, 'day')
 
 
 
@@ -84,7 +91,7 @@ df2.iloc[4,0] = '雲林縣水林鄉'
 df2.iloc[5,0] = '台中市大肚區'
 df2.set_index("Stn" , inplace=True)
 # 改columns名稱
-df2.columns=day
+df2.columns=day.date
 
 
 
@@ -105,5 +112,5 @@ plt.ylabel('')
 plt.title('<低於17度警告>')
 note = ' \n 0：發生機率低\n 1：當日或前後1日有機會發生 \n 2：當日發生可能性大'
 #plt.xlabel(note,loc='left')
-file_name = 'D:\\我的雲端硬碟\\work\\3.TARI\\Temperature\\'+file_name+'.png'
+file_name = r'C:\Users\user_11\Downloads\\'+file_name+'.png'
 plt.savefig(file_name, bbox_inches='tight',transparent=False)
