@@ -14,7 +14,7 @@ import time
 
 
 # <<<資料輸入區>>>
-Input_Date = '20220520'                                                #<<<<<<<<<<<<<<<<請輸入資料起始時間>>>>>>>>>>>>>>
+Input_Date = '20220523'                                                #<<<<<<<<<<<<<<<<請輸入資料起始時間>>>>>>>>>>>>>>
 
 
 Year = int(Input_Date[0:4])
@@ -25,6 +25,8 @@ Day = int(Input_Date[6:])
 
 start_day = pd.to_datetime(Input_Date)
 day = pd.date_range(start_day,periods=15,freq='D')
+day = day.strftime('%Y/%m/%d')
+# L = day.strftime('%Y/%m/%d %H:%M:%S')
 
 Tmax = r'C:\Users\user_11\Downloads\soy_Tmax_35upFcst_1-15d_'+Input_Date+'.csv'    #<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>
 Tmin = r'C:\Users\user_11\Downloads\soy_Tmin_17lowFcst_1-15d_'+Input_Date+'.csv'    #<<<<<<<<<<<<<<<<請輸入資料>>>>>>>>>>>>>>>>>>>>>
@@ -69,7 +71,7 @@ df1.iloc[4,0] = '雲林縣水林鄉'
 df1.iloc[5,0] = '台中市大肚區'
 df1.set_index("Stn" , inplace=True)
 # 改columns名稱
-df1.columns=day.date
+df1.columns=day
 
 
 
@@ -91,7 +93,7 @@ df2.iloc[4,0] = '雲林縣水林鄉'
 df2.iloc[5,0] = '台中市大肚區'
 df2.set_index("Stn" , inplace=True)
 # 改columns名稱
-df2.columns=day.date
+df2.columns=day
 
 
 
