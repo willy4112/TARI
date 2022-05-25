@@ -423,3 +423,101 @@ for i in range(5):
     
     name = list_draw_1[num].split('.')[0]
     plt.savefig(name+'_forsummer'+'.png', bbox_inches='tight',transparent=True)
+
+#%% 繪製Heatmap fall history
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import glob
+
+list_draw = glob.glob(r'F:\Maize stage future\_Draw\*')
+
+season = ['1_spring','2_summer','3_fall','4_winter']
+season = season[2]
+# for i in range(5):
+    # num = i
+num = 0
+
+list_draw_1 = [f for f in list_draw if season in f ]
+list_draw_1 = [f for f in list_draw_1 if '.csv' in f ]
+list_draw_1.sort()
+
+
+drow_1 = pd.read_csv(list_draw_1[num])
+name = (list_draw_1[num].split('\\')[-1]).split('_')[0]
+
+drow_1 = drow_1.iloc[:,[0,1,2,-3,-2,-1]]
+
+# 擷取所要的資料
+# 取得經緯度座標，並排列整齊
+lis_lon = set(list(drow_1['lon']))
+lis_lon = sorted(lis_lon, reverse = False)
+
+lis_lat = set(list(drow_1['lat']))
+lis_lat = sorted(lis_lat, reverse = True)
+
+value_hand = list(drow_1.columns)
+
+
+# 製作放置heatmap的表格
+data = np.ones((len(lis_lat),len(lis_lon),len(value_hand)))*-1
+for i in range(drow_1.shape[0]):
+    L = []
+    L = drow_1.loc[i,value_hand]
+    x = lis_lat.index(L['lat'])
+    y = lis_lon.index(L['lon'])
+    data[x,y] = list(drow_1.iloc[i])
+
+mask_drow = data[:,:,0]
+
+report_2030s = data[:,:,3]
+report_2040s = data[:,:,4]
+report_2050s = data[:,:,5]
+
+x = [i for i in range(0,len(lis_lon)+1,5)]
+y = [i for i in range(0,len(lis_lat)+1,5)]
+
+plt.rcParams['font.sans-serif'] = 'Microsoft JhengHei'
+plt.rcParams["axes.unicode_minus"] = False
+plt.figure(figsize=[15,7],dpi=200)
+
+
+cbar_kws = {"ticks":[i for i in range(0,26,5)] }
+plt.subplot(131)
+sns.heatmap(report_2030s,vmin=0,vmax=25,cmap='RdYlGn_r', cbar_kws=cbar_kws,square=True,xticklabels = 5,yticklabels = 5,mask=(mask_drow < 0 ))
+plt.title(season+'   '+name+'_'+value_hand[-3]+'\n',size = 20)
+plt.xticks(x,lis_lon[::5],rotation =90)
+plt.yticks(y,lis_lat[::5],rotation =0)
+plt.xlabel('lon')
+plt.ylabel('lat')
+plt.tight_layout()
+
+
+# plt.figure(figsize=[7,5],dpi=200)
+plt.subplot(132)
+cbar_kws = {"ticks":[i for i in range(0,26,5)] }
+sns.heatmap(report_2040s,vmin=0,vmax=25,cmap='RdYlGn_r', cbar_kws=cbar_kws,square=True,xticklabels = 5,yticklabels = 5,mask=(mask_drow < 0 ))
+plt.title(season+'   '+name+'_'+value_hand[-2]+'\n',size = 20)
+plt.xticks(x,lis_lon[::5],rotation =90)
+plt.yticks(y,lis_lat[::5],rotation =0)
+plt.xlabel('lon')
+plt.ylabel('lat')
+plt.tight_layout()
+
+
+# plt.figure(figsize=[7,5],dpi=200)
+plt.subplot(133)
+cbar_kws = {"ticks":[i for i in range(0,26,5)] }
+sns.heatmap(report_2050s,vmin=0,vmax=25,cmap='RdYlGn_r', cbar_kws=cbar_kws,square=True,xticklabels = 5,yticklabels = 5,mask=(mask_drow < 0 ))
+plt.title(season+'   '+name+'_'+value_hand[-1]+'\n',size = 20)
+plt.xticks(x,lis_lon[::5],rotation =90)
+plt.yticks(y,lis_lat[::5],rotation =0)
+plt.xlabel('lon')
+plt.ylabel('lat')
+plt.tight_layout()
+
+name = list_draw_1[num].split('.')[0]
+# plt.savefig(name+'.png', bbox_inches='tight',transparent=True)
+
