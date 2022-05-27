@@ -18,13 +18,20 @@ lis_lon = sorted(lis_lon, reverse = False)
 lis_lat = set(list(df['lat']))
 lis_lat = sorted(lis_lat, reverse = True)
 
+plt.rcParams['font.sans-serif'] = 'Microsoft JhengHei'
+plt.rcParams["axes.unicode_minus"] = False
 plt.figure(figsize=[7,8],dpi = 200)
-plt.scatter(df['lon'],df['lat'],marker='s',s=25, c=df['sum'],vmin=0,cmap='RdYlGn_r')
+plt.scatter(df['lon'],df['lat'],marker='s',s=40, c=df['sum'],vmin=0,cmap='RdYlGn_r')
 
 
 plt.xlim(119.5, 122.5)
 plt.ylim(21.5, 25.5)
+plt.axis('equal')
 plt.colorbar()
+plt.xlabel('lon')
+plt.ylabel('lat')
+plt.title('1980-2019熱逆境天數')
+plt.tight_layout()
 
 #%% 用點陣圖來畫地圖
 import pandas as pd
@@ -54,6 +61,8 @@ df_4 = df[(df['lable']==lis_lable[3])]
 
 
 # 請自行調整比例
+plt.rcParams['font.sans-serif'] = 'Microsoft JhengHei'
+plt.rcParams["axes.unicode_minus"] = False
 plt.figure(figsize=[6,7.5],dpi = 200)
 
 # 個別設定每一層
@@ -64,6 +73,7 @@ plt.plot(df_3['lon'],df_3['lat'],linewidth=0,marker='s',markersize = 6,label='6-
 
 plt.xlim(119.5, 122.5)
 plt.ylim(21.5, 25.5)
+plt.axis('equal')
 plt.legend(loc='lower right')
 plt.xlabel('lon')
 plt.ylabel('lat')
