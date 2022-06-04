@@ -1,0 +1,124 @@
+---
+title: "ReadGLYCIM"
+author: "Chuchung Chen"
+date: "November 13, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Read me
+This project was used to read the g01 file from GLYCIM simulation results.
+
+### Read functions
+```{r read functions}
+## ---- read simulation ----
+# arguement: simpath, year
+# e.g.: simpath <- "Chinan17-1KS9/ChinanKS9.g01"
+#	  year <- 2017
+get_sim <- function (simpath, yr){
+  d1 = as.Date(paste("01/01/",yr), "%m/%d/%Y", tz=Sys.timezone())
+  
+  head<-c("Date1","JDAY","LAREAB","LAREAM","LAREAT","LSTEMH","NBRNCH","NFLRS","PODS","RSTAGE",
+          "VSTAGE","SEEDP", "GSEEDWT","CLIMAT2","CLIMAT3","CLIMAT4","CLIMAT1","CLIMAT5","SHTWT",
+          "ROOTWT","PSIM","WSTRESS","LSTRESS","LEAFWT","PETWT","STEMWT","SEEDWT","PODWT")
+    
+  sim <- read.table(file=simpath,sep="")	#"," here, read seperately with header
+  colnames(sim)<-unlist(head)	# combine header and content
+  
+  Date <- sim$"JDAY"-1+d1	## make Datetime vector
+  sim <- cbind(Date, sim)	## combine the Datetime vector into the data frame
+  return (sim)
+}
+## ---------- Find specific Rstage ---------
+# This is a Recursive Function to extract
+extractby_Rstage <- function(df, R, delt){
+  
+  df1 <- subset(df, RSTAGE>= R-delt & RSTAGE <= R+delt )
+  
+  if(nrow(df1)==1){
+    return (df1)
+    }else if(nrow(df1)>1){
+      return(extractby_Rstage(df,R,delt*0.91))
+    }else if(nrow(df)<1){
+      return(extractby_Rstage(df,R,delt*1.07))
+    }else{
+      break
+  }
+  
+}
+## ------------ short report -----------------
+# this function should work with the extractby_Rsrage function to acquire the harvest date, 
+# yield per plant and yield per hector informaitons. The function extract the planting space and row space to calclate the plant 
+# numbers per hector. The dry weight per plant were extract from the input table.
+yield_vsoybean <- function(df.int,df.results){
+  name <- df.int$name_of_folder
+  RowSpace <- df.int$RowSpace
+  PlantSpace <- df.int$PlantSpace
+  Plants_ha <- (10000/RowSpace) * (10000/PlantSpace) #單位為(株/ha)
+  
+  mature.Date <- df.results$Date
+  Podwt <-df.results$PODWT
+  Seedwt <- df.results$SEEDWT
+  
+  podfw_plant <- Podwt/(1-0.78) + Seedwt/(1-0.67) #單位為(g)
+  podfw_ha <- podfw_plant*Plants_ha/1000  #單位為(kg/ha)
+  
+  
+  podfw_plant <- round(podfw_plant,2)
+  podfw_ha <- round(podfw_ha,0)
+  
+  #df.return <- data.frame(name,podfw_plant, Plants_ha,podfw_ha )
+  #names(df.return) <- c("ID","PodFw_plant","PlantDensity","Yield_ha")
+  toReturn <- c(name,podfw_plant,round(Plants_ha,0),podfw_ha)
+  #return(df.return)
+  return(toReturn)
+}
+  
+```
+
+### Start Read
+
+
+
+```{r read, echo=FALSE}
+name_of_folder = "Run/20211115-1/"
+name_of_folder_save = "run/report_20211115-1.csv"
+path <- name_of_folder
+oneReport<-{}
+report <- data.frame(  ID = NA, PodFW_plant = NA, PlantDensity = NA,Yield_ha = NA,
+                       floweringDate=NA,PodstartingDate=NA, PodfillingDate=NA, HarvestDate = NA  )
+report <- report[-1,]
+counter = 1
+for(s in 2:26){
+  create1 <- create[s,]
+  name <- as.character(create1$name_of_folder)
+  yr <- as.character(create1$Year) # should be check
+  sim <- get_sim(paste0(path,name,"/",name,".g01"),yr)
+   # the last date of pod filling - for yield
+  sim1 <- subset(sim, RSTAGE>= 6.1 )
+  sim1 <- sim1[1,]
+  oneReport <- yield_vsoybean(create1,sim1)
+  # the first date of flowering
+  sim1 <- sim[sim$RSTAGE>=1,]
+  oneReport <- append(oneReport,format(sim1$Date[1],"%Y-%m-%d"))
+  
+  #the first date of pod starting
+  sim1 <- sim[sim$RSTAGE>=4,]
+  oneReport <- append(oneReport,format(sim1$Date[1],"%Y-%m-%d"))
+  
+  # the first date of pod filling
+  sim1 <- sim[sim$RSTAGE>=6,]
+  oneReport <- append(oneReport,format(sim1$Date[1],"%Y-%m-%d"))
+  # the harvest date
+  sim1 <- sim[sim$RSTAGE>=6.1,]
+  oneReport <- append(oneReport,format(sim1$Date[1],"%Y-%m-%d"))
+  report[counter,]  <- oneReport
+  counter = counter + 1
+  }
+write.table(report,name_of_folder_save,sep=",",row.names=FALSE)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
