@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 14 08:12:03 2022
-
-@author: acer
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Sat Jul 10 18:36:12 2021
  
 @author: CCW
