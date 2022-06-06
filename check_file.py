@@ -18,7 +18,10 @@ season = ['1_spring','2_summer','3_fall','4_winter']
 list_file = [f for f in os.listdir(path) if '.' not in f]
 list_file.remove('__pycache__')
 list_file.remove('_Draw')
+list_file.remove('_Draw_2D')
+list_file.remove('_Draw_3D')
 list_file.remove('舊程式碼')
+
 
 
 see = []
@@ -27,7 +30,7 @@ for i in list_file:
     L = []
     L.append(i)
     for j in season:
-        n1 = r'F:\Maize stage future\\'+i+'\\'+'\\'+j
+        n1 = fr'F:\Maize stage future\{i}\{j}'
         
         num = len(os.listdir(n1))
         L.append(num)
@@ -43,7 +46,7 @@ for i in list_file:
     
     # i = list_file[3]
     for j in season:
-        n1 = r'F:\Maize stage future\\'+i+'\\'+'\\'+j
+        n1 = fr'F:\Maize stage future\{i}\{j}'
         num_file = os.listdir(n1)
         for k in num_file:
             a = pd.read_csv(n1+'\\'+k,encoding='big5')
@@ -53,8 +56,16 @@ for i in list_file:
                 L.append(n1+'\\'+k)
                 print(n1+'\\'+k)
 
+#%% 檢查0306
 
-
+L = []
+for i in list_file:
+    n1 = fr'F:\Maize stage future\{i}\1_spring'
+    num_file = os.listdir(n1)
+    num_file = [f for f in num_file if '0306' in f ]
+    num = len(num_file)
+    L.append([i,num])
+df = pd.DataFrame(L)
 
 #%% 歷史資料彙整
 
