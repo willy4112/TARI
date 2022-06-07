@@ -71,11 +71,9 @@ import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# =============================================================================
 # 行政院農業委員會資料開放平台>雜糧生產概況
 # 109,全年,食用玉米
 # https://data.coa.gov.tw/open_search.aspx?id=8v9pJZ858uOz
-# =============================================================================
 
 # 建立目標清單
 list_city = {'Taoyuan':['楊梅區','中壢區','平鎮區'],
@@ -88,18 +86,15 @@ list_city = {'Taoyuan':['楊梅區','中壢區','平鎮區'],
              'Tainan':['安南區','安定區','歸仁區','新市區','西港區','永康區','仁德區','山上區']
 }
 
-
 list_name = list(list_city)
+
 # =============================================================================
 # 請輸入要查找的區域與年分範圍
-# =============================================================================
-
 name = 'Tainan'
 list_name = list_city[name]
 y_min = 1980    # 1980
 y_max = 2019    # 2019
-
-
+# =============================================================================
 
 # 匯入城鎮資料
 city = r'F:\臺灣歷史氣候重建資料_5公里\grid_5km_town2.csv'
@@ -107,16 +102,15 @@ df_city = pd.read_csv(city,encoding='BIG5')
 # 資料位置
 path = r'C:\Users\user_11\Downloads\CZMAIZE'
 
-
-# 篩選出目標地點        <<<<<<<<<<篩選清單
+# 篩選出目標地點
 list_city = df_city[df_city['TOWNNAME'].isin(list_name)]
 
-# 建立index list      <<<<<<<<<<建立index，需修改
+# 建立index list
 number = list_city.index
 
-# 模擬資料
-file = r'C:\Users\user_11\Downloads\CZMAIZE\1_spring\HarvestDate19800204.csv'
-df = pd.read_csv(file)
+# # 模擬資料
+# file = r'C:\Users\user_11\Downloads\CZMAIZE\1_spring\HarvestDate19800204.csv'
+# df = pd.read_csv(file)
 
 # 將所有資料列表
 list_all = glob.glob(path+'\\*\\*')
@@ -208,35 +202,37 @@ import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# =============================================================================
-# 資料來源：新竹縣政府>縣政統計>統計年報(109年)>4.農林漁牧>4-4.農產品收穫面積及生產量
+# 行政院農業委員會資料開放平台>雜糧生產概況
+# 109,全年,食用玉米
+# https://data.coa.gov.tw/open_search.aspx?id=8v9pJZ858uOz
 
-# 資料來源：https://miaoli.dgbas.gov.tw/statweb/Page/stat01_1.aspx?Mid=3009
-# 農業統計	苗栗縣雜糧生產概況 (109年)
+# 建立目標清單
+list_city = {'Taoyuan':['楊梅區','中壢區','平鎮區'],
+             'Hsinchu':['竹北市','關西鎮','竹東鎮','橫山鄉','新豐鄉'],
+             'Miaoli':['大湖鄉','通霄鎮','後龍鎮','公館鄉'],
+             'Taichung':['大里區','沙鹿區','大雅區','大肚區','神岡區','豐原區','清水區','后里區'],
+             'Changhua':['芳苑鄉','大城鄉','埔鹽鄉','溪州鄉','福興鄉','二林鎮','彰化市','埤頭鄉','溪湖鎮','和美鎮'],
+             'Yunlin':['虎尾鎮','元長鄉','土庫鎮','東勢鄉','褒忠鄉','莿桐鄉','四湖鄉','口湖鄉','臺西鄉','水林鄉','林內鄉'],
+             'Chiayi':['六腳鄉','太保市','水上鄉','新港鄉','義竹鄉','鹿草鄉'],
+             'Tainan':['安南區','安定區','歸仁區','新市區','西港區','永康區','仁德區','山上區']
+}
 
-# 資料來源：桃園縣政府 主計處>業務>資訊統計>109年
-# =============================================================================
-# 建立目標清單          <<<<<<<<<<建立清單
-list_city_hsinchu = ['竹北市','關西鎮','竹東鎮','橫山鄉','新豐鄉']
-list_city_miaoli = ['大湖鄉','通霄鎮','後龍鎮','公館鄉']
-list_city_taoyuan = ['楊梅區','中壢區','平鎮區']
-
+list_name = list(list_city)
 
 # =============================================================================
-# 請輸入要查找的年分範圍
-# =============================================================================
+# 請輸入要查找的區域與年分範圍
+name = 'Tainan'
+list_name = list_city[name]
 y_min = 1980    # 1980
 y_max = 2019    # 2019
-
+# =============================================================================
 
 # 匯入城鎮資料
 city = r'F:\臺灣歷史氣候重建資料_5公里\grid_5km_town2.csv'
 df_city = pd.read_csv(city,encoding='BIG5')
 # 資料位置
 path = r'C:\Users\user_11\Downloads\CZMAIZE'
-# 目標區域
-name = 'taoyuan'
-list_name = list_city_taoyuan
+
 
 # 篩選出目標地點        <<<<<<<<<<篩選清單
 list_city = df_city[df_city['TOWNNAME'].isin(list_name)]
