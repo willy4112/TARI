@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 # 輸入地圖檔
 # TW_map = gpd.read_file(r'F:\Basemap(GIS地圖)\TWN_COUNTY_97.shp',encoding='utf-8')
-TW_map = gpd.read_file(r'F:\download\mapdata202203151023\COUNTY_MOI_1090820.shp',encoding='utf-8')
+TW_map = gpd.read_file(r'C:\Users\TARI\Downloads\mapdata202203151023\COUNTY_MOI_1090820.shp',encoding='utf-8')
 
 # 如果地圖編碼非 WGS84(epsg=4326)，則須輸入原始地圖編碼 TWD97(epsg:3824)
 # TW_map.crs = {'init' :'epsg:3826'}
@@ -35,6 +35,11 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
 
+# 輸入地圖檔
+# TW_map = gpd.read_file(r'F:\Basemap(GIS地圖)\TWN_COUNTY_97.shp',encoding='utf-8')
+TW_map = gpd.read_file(r'C:\Users\TARI\Downloads\mapdata202203151023\COUNTY_MOI_1090820.shp',encoding='utf-8')
+# 改變地圖編碼為 WGS84(epsg=4326)，經緯度系統
+TW_map = TW_map.to_crs(epsg=4326)
 
 # 匯入檔案
 file = r'G:\Maize stage future\_Draw\His_1_spring.csv'
@@ -71,6 +76,12 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
 
+# 輸入地圖檔
+# TW_map = gpd.read_file(r'F:\Basemap(GIS地圖)\TWN_COUNTY_97.shp',encoding='utf-8')
+TW_map = gpd.read_file(r'C:\Users\TARI\Downloads\mapdata202203151023\COUNTY_MOI_1090820.shp',encoding='utf-8')
+# 改變地圖編碼為 WGS84(epsg=4326)，經緯度系統
+TW_map = TW_map.to_crs(epsg=4326)
+
 # 建立目標清單
 list_city = {'Taoyuan':['楊梅區','中壢區','平鎮區'],
              'Hsinchu':['竹北市','關西鎮','竹東鎮','橫山鄉','新豐鄉'],
@@ -102,7 +113,7 @@ city = r'G:\臺灣歷史氣候重建資料_5公里\grid_5km_town2.csv'
 df_city = pd.read_csv(city,encoding='BIG5')
 
 # 將經緯度併入GIS編碼
-geom = [Point(xy) for xy in zip(df.lon, df.lat)] 
+geom = [Point(xy) for xy in zip(df_city.LON, df_city.LAT)] 
 # 設定地圖編碼
 crs = {'init': 'epsg:4326'}
 
