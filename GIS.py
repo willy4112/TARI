@@ -163,3 +163,85 @@ plt.xlabel('lon')
 plt.ylabel('lat')
 plt.title('選取位置')
 plt.legend(loc='lower right')
+
+#%% top
+
+import pandas as pd 
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from shapely.geometry import Point
+
+# 輸入地圖檔
+# TW_map = gpd.read_file(r'F:\Basemap(GIS地圖)\TWN_COUNTY_97.shp',encoding='utf-8')
+TW_map = gpd.read_file(r'C:\Users\TARI\Downloads\mapdata202203151023\COUNTY_MOI_1090820.shp',encoding='utf-8')
+# 改變地圖編碼為 WGS84(epsg=4326)，經緯度系統
+TW_map = TW_map.to_crs(epsg=4326)
+
+# 建立目標清單
+list_city = {'Changhua':['芳苑鄉','大城鄉'],
+             'Yunlin':['虎尾鎮','元長鄉','土庫鎮','東勢鄉','褒忠鄉','莿桐鄉','四湖鄉','口湖鄉','臺西鄉','水林鄉','林內鄉','麥寮鄉','西螺鎮'],
+             'Chiayi':['六腳鄉','太保市','水上鄉','新港鄉','義竹鄉','鹿草鄉'],
+             'Tainan':['安南區','安定區','歸仁區','新市區','西港區','永康區'],
+             'Kaohsiung':['大寮區','永安區'],
+             'Hualien':['吉安鄉','壽豐鄉']
+                 }
+
+list_name = list(list_city)
+
+list_Changhua = list_city['Changhua']
+list_Yunlin = list_city['Yunlin']
+list_Chiayi = list_city['Chiayi']
+list_Tainan = list_city['Tainan']
+list_Kaohsiung = list_city['Kaohsiung']
+list_Hualien = list_city['Hualien']
+
+# 匯入城鎮資料
+city = r'G:\臺灣歷史氣候重建資料_5公里\grid_5km_town2.csv'
+df_city = pd.read_csv(city,encoding='BIG5')
+
+# 將經緯度併入GIS編碼
+geom = [Point(xy) for xy in zip(df_city.LON, df_city.LAT)] 
+# 設定地圖編碼
+crs = {'init': 'epsg:4326'}
+
+gdf = gpd.GeoDataFrame(df_city, crs=crs, geometry=geom)
+
+gdf_x = gdf[(gdf['note']<0)]
+
+gdf01 = gdf[gdf['TOWNNAME'].isin(list_Changhua)]
+gdf02 = gdf[gdf['TOWNNAME'].isin(list_Yunlin)]
+gdf03 = gdf[gdf['TOWNNAME'].isin(list_Chiayi)]
+gdf04 = gdf[gdf['TOWNNAME'].isin(list_Tainan)]
+gdf05 = gdf[gdf['TOWNNAME'].isin(list_Kaohsiung)]
+gdf06 = gdf[gdf['TOWNNAME'].isin(list_Hualien)]
+
+# 設定畫框
+fig, ax = plt.subplots(1, figsize=(10, 10),dpi = 200)
+# 劃出縣市邊界
+TW_map.boundary.plot(color = 'Black', ax=ax,alpha=0.25)
+# 畫出數據
+gdf.plot(column='note', ax=ax,color='#c8c8c8',vmin = 0,marker='s',markersize=50,legend=True,alpha=0.8)
+
+gdf01.plot(column='note', ax=ax,color='#ff4c4c',marker='s',markersize=50,legend=True,alpha=0.75,label = '彰化')
+gdf02.plot(column='note', ax=ax,color='#ffb74c',marker='s',markersize=50,legend=True,alpha=0.75,label = '雲林')
+gdf03.plot(column='note', ax=ax,color='#dbff4c',marker='s',markersize=50,legend=True,alpha=0.75,label = '嘉義')
+gdf04.plot(column='note', ax=ax,color='#70ff4c',marker='s',markersize=50,legend=True,alpha=0.75,label = '台南')
+gdf05.plot(column='note', ax=ax,color='#4cff93',marker='s',markersize=50,legend=True,alpha=0.75,label = '高雄')
+gdf06.plot(column='note', ax=ax,color='#4cffff',marker='s',markersize=50,legend=True,alpha=0.75,label = '花蓮')
+
+
+gdf_x.plot(column='note', ax=ax,color='black',vmin = 0,marker='x',markersize=50,legend=True,alpha=0.75,label = 'not use')
+
+# 設定經緯度範圍
+_ = ax.set_xlim([119.8, 122.2])
+_ = ax.set_ylim([21.8, 25.4])
+
+plt.rcParams['font.sans-serif'] = 'Microsoft JhengHei'
+plt.rcParams["axes.unicode_minus"] = False
+
+plt.xlabel('lon')
+plt.ylabel('lat')
+plt.title('選取位置-TOP30')
+plt.legend(loc='lower right')
+
+
