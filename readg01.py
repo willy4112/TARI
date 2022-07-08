@@ -27,13 +27,15 @@ import pandas as pd
 df_town = pd.read_csv(r'G:\climate change model\to_run\town.csv')
 
 # crop = 'KH9'
+# rcp = 'RCP45'
+# model = 'bcc-csm1-1'
+# year = 2030
+# time = 'fall'
+
 # rcp = ['RCP45','RCP85']
 # model = ['bcc-csm1-1','canESM2','CCSM4','MIROC-ESM','MRI-CGCM3','norESM1-M']
-# model = model[0]
 # year = [2030,2040,2050]
-# year = year[0]
 # time = ['spring','fall']
-# time = time[0]
 # time_day= {'spring':'0215','fall':'0830'}
 
 def writedata(crop,rcp,model,year,time):
@@ -52,8 +54,14 @@ def writedata(crop,rcp,model,year,time):
         podfw_plant = round(g01.loc[g01.shape[0]-1,'PODWT']/(1-0.78) + g01.loc[g01.shape[0]-1,'SEEDWT']/(1-0.67),2)  # g/株
         podfw_ha = round(podfw_plant*plants_ha/1000,0)     # kg/ha
         time_start = g01.loc[0,'JDAY']-3
-        time_R6,R6 = g01[(g01.RSTAGE>=6)].iloc[0,[1,9]]
-        time_R61,R61 = g01[(g01.RSTAGE>=6.1)].iloc[0,[1,9]]
+        # Rstage未達6或6.1
+        if g01.loc[g01.shape[0]-1,'RSTAGE'] >= 6.1:
+            time_R6,R6 = g01[(g01.RSTAGE>=6)].iloc[0,[1,9]]
+            time_R61,R61 = g01[(g01.RSTAGE>=6.1)].iloc[0,[1,9]]
+        elif g01.loc[g01.shape[0]-1,'RSTAGE'] >= 6:
+            time_R61,R61 = g01.loc[g01.shape[0]-1,['JDAY','RSTAGE']]
+        else:
+            time_R6,R6 = time_R61,R61 = g01.loc[g01.shape[0]-1,['JDAY','RSTAGE']]
         range_R6 = time_R6-time_start
         range_R61 = time_R61-time_start
         
@@ -62,5 +70,19 @@ def writedata(crop,rcp,model,year,time):
     report = pd.DataFrame(report,columns = ['lon','lat','縣市','鄉鎮','產量(kg/ha)','到達R6日數','到達R6.1日數'])
     return report
 
-KH9_RPC45_M1_2030s = writedata('KH9','RCP45','bcc-csm1-1',2030,'spring')
-KH9_RPC45_M1_2030s.to_csv(r'G:\climate change model\report\KH9_RPC45_bcc-csm1-1_20300215.csv',encoding='utf-8',index=False)
+time_day= {'spring':'0215','fall':'0830'}
+crop = ['KH9', 'TN10']
+time = ['spring', 'fall']
+# model = ['bcc-csm1-1','canESM2','CCSM4','MIROC-ESM','MRI-CGCM3','norESM1-M']
+
+r = 'RCP45'
+m = 'norESM1-M'
+
+for c in crop:
+    for t in time:
+        d = time_day[t]
+        year = [2030,2040,2050]
+        for i in year:
+            a = writedata(c,r,m,i,t)
+            a.to_csv(fr'G:\climate change model\report\{c}_{r}_{m}_{i}{d}.csv',encoding='utf-8',index=False) 
+            print(c,t,i)
